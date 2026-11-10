@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <ResearchProjectDef>
+    <defName>RepairBench_RepairTech</defName>
+    <label>repair techniques</label>
+    <description>Learn to patch and restore worn equipment instead of throwing it away. Unlocks the repair bench, and the repair kits it runs on.</description>
+    <baseCost>600</baseCost>
+    <techLevel>Medieval</techLevel>
+    <prerequisites>
+      <li>Smithing</li>
+    </prerequisites>
+    <researchViewX>1.30</researchViewX>
+    <researchViewY>3.30</researchViewY>
+    <generalRules>
+      <rulesStrings>
+        <li>subject->repair techniques</li>
+
+        <li>subject_story->kept broken machinery running long after the spare parts ran out</li>
+        <li>subject_story->patched cracked armor with salvaged plate and patience</li>
+
+        <li>subject_gerund->repairing</li>
+      </rulesStrings>
+    </generalRules>
+  </ResearchProjectDef>
+
+</Defs>

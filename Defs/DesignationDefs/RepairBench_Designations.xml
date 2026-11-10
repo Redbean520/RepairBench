@@ -1,0 +1,8 @@
+<Defs>
+  <DesignationDef>
+    <defName>RepairBench_RepairDesignation</defName>
+    <texturePath>Designations/RepairBench_Repair</texturePath>
+    <targetType>Thing</targetType>
+    <designateCancelable>true</designateCancelable>
+  </DesignationDef>
+</Defs>

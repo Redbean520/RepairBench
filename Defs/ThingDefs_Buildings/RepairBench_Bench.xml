@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <ThingDef ParentName="BuildingBase">
+    <defName>RepairBench_Bench</defName>
+    <label>repair bench</label>
+    <description>A cluttered workbench of clamps, spare parts and solvent. Damaged gear left here is slowly restored to full condition, consuming repair kits as the work goes on.</description>
+    <thingClass>Building</thingClass>
+    <drawerType>MapMeshAndRealTime</drawerType>
+    <graphicData>
+      <texPath>Things/Building/Production/RepairBench/RepairBench</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(3.5,1.5)</drawSize>
+    </graphicData>
+    <costList>
+      <Steel>75</Steel>
+      <Cloth>15</Cloth>
+    </costList>
+    <statBases>
+      <WorkToBuild>2400</WorkToBuild>
+      <MaxHitPoints>150</MaxHitPoints>
+      <Flammability>0.5</Flammability>
+    </statBases>
+    <size>(3,1)</size>
+    <designationCategory>Production</designationCategory>
+    <uiOrder>2510</uiOrder>
+    <passability>PassThroughOnly</passability>
+    <hasInteractionCell>true</hasInteractionCell>
+    <interactionCellOffset>(0,0,-1)</interactionCellOffset>
+    <constructionSkillPrerequisite>3</constructionSkillPrerequisite>
+    <comps>
+      <li Class="CompProperties_Refuelable">
+        <fuelConsumptionRate>0</fuelConsumptionRate>
+        <fuelCapacity>20</fuelCapacity>
+        <autoRefuelPercent>0.9</autoRefuelPercent>
+        <consumeFuelOnlyWhenUsed>true</consumeFuelOnlyWhenUsed>
+        <showAllowAutoRefuelToggle>true</showAllowAutoRefuelToggle>
+        <canEjectFuel>true</canEjectFuel>
+        <fuelLabel>repair kits</fuelLabel>
+        <fuelGizmoLabel>repair kits</fuelGizmoLabel>
+        <fuelFilter>
+          <thingDefs>
+            <li>RepairBench_RepairKit</li>
+          </thingDefs>
+        </fuelFilter>
+      </li>
+      <li Class="CompProperties_AffectedByFacilities">
+        <linkableFacilities>
+          <li>ToolCabinet</li>
+        </linkableFacilities>
+      </li>
+    </comps>
+    <placeWorkers>
+      <li>PlaceWorker_PreventInteractionSpotOverlap</li>
+      <li>PlaceWorker_ShowFacilitiesConnections</li>
+    </placeWorkers>
+    <researchPrerequisites>
+      <li>RepairBench_RepairTech</li>
+    </researchPrerequisites>
+    <modExtensions>
+      <li Class="RepairBench.RepairBenchExtension">
+        <ticksForFullRepair>3000</ticksForFullRepair>
+        <kitsForFullRepair>10</kitsForFullRepair>
+      </li>
+    </modExtensions>
+  </ThingDef>
+
+</Defs>

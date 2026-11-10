@@ -1,0 +1,23 @@
+<Defs>
+
+  <WorkTypeDef>
+    <defName>RepairBench_Repairing</defName>
+    <labelShort>repair</labelShort>
+    <pawnLabel>Repairer</pawnLabel>
+    <gerundLabel>repairing</gerundLabel>
+    <verb>Repair at</verb>
+    <naturalPriority>460</naturalPriority>
+    <relevantSkills>
+      <li>Crafting</li>
+    </relevantSkills>
+    <workTags>
+      <li>Crafting</li>
+      <li>ManualSkilled</li>
+      <li>Commoner</li>
+      <li>AllWork</li>
+    </workTags>
+    <alwaysStartActive>true</alwaysStartActive>
+    <requireCapableColonist>true</requireCapableColonist>
+  </WorkTypeDef>
+
+</Defs>

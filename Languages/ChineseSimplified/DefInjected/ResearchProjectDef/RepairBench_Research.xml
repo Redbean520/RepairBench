@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <ResearchProjectDef>
+    <RepairBench_RepairTech>
+      <label>修补技术</label>
+      <description>学会修补、翻新磨损的装备，而不是直接丢掉。解锁修补台，以及它需要的修补剂。</description>
+    </RepairBench_RepairTech>
+  </ResearchProjectDef>
+
+</LanguageData>

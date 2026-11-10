@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Repair Bench - assembly (RimWorld 1.7 only)
+      1.7 uses net10.0 + Krafs.Rimworld.Ref 1.7.4985-unstable. No Harmony needed.
+      Version synced in three places: this file / RepairBenchMod.cs const Version / About\About.xml <modVersion>.
+      Build: & "$env:USERPROFILE\.dotnet\dotnet.exe" build -c Release  (SDK 10 lives in the user profile)
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+
+    <AssemblyName>RepairBench</AssemblyName>
+    <RootNamespace>RepairBench</RootNamespace>
+
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Deterministic>true</Deterministic>
+    <DebugType>portable</DebugType>
+
+    <Version>0.1.0</Version>
+    <Company>Redbean</Company>
+    <Product>Repair Bench</Product>
+    <NoWarn>CS1591</NoWarn>
+
+    <ModVersionFolder>1.7</ModVersionFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.4985-unstable" />
+  </ItemGroup>
+
+  <Target Name="CopyToModAssemblies" AfterTargets="Build">
+    <MakeDir Directories="$(MSBuildProjectDirectory)\..\..\$(ModVersionFolder)\Assemblies" />
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(MSBuildProjectDirectory)\..\..\$(ModVersionFolder)\Assemblies"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

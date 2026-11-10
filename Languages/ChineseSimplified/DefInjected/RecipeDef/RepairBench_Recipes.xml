@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <RecipeDef>
+    <RepairBench_MakeRepairKit>
+      <label>制作修补剂</label>
+      <description>用钢铁和布料制作修补剂。</description>
+      <jobString>正在制作修补剂。</jobString>
+    </RepairBench_MakeRepairKit>
+  </RecipeDef>
+
+</LanguageData>

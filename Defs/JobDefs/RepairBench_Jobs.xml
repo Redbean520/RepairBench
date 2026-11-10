@@ -1,0 +1,10 @@
+<Defs>
+
+  <JobDef>
+    <defName>RepairBench_RepairItem</defName>
+    <driverClass>RepairBench.JobDriver_RepairItem</driverClass>
+    <reportString>repairing TargetA.</reportString>
+    <casualInterruptible>true</casualInterruptible>
+  </JobDef>
+
+</Defs>

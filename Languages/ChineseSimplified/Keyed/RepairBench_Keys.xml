@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <DesignatorRepairItems>标记待修装备</DesignatorRepairItems>
+  <DesignatorRepairItemsDesc>标记地上被磨损的武器、衣物或护甲。小人会把它搬到修补台，消耗修补剂修满耐久。穿戴中或手持中的装备请先脱下或丢到地上。</DesignatorRepairItemsDesc>
+
+  <MessageAlreadyRepaired>耐久已满，不需要修理。</MessageAlreadyRepaired>
+  <MessageGearNotOnGround>只能标记放在地上的装备，请先脱下或丢到地上。</MessageGearNotOnGround>
+  <RepairBench_NoUsableBench>没有装了足够修补剂的修补台。</RepairBench_NoUsableBench>
+
+  <AlertRepairBenchPending>有装备等待修补</AlertRepairBenchPending>
+  <AlertRepairBenchPendingDesc>已标记的装备无法修理：没有装了足够修补剂的修补台。请建造修补台或补满修补剂。</AlertRepairBenchPendingDesc>
+
+</LanguageData>

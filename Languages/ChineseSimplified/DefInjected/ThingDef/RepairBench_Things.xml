@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <ThingDef>
+    <RepairBench_Bench>
+      <label>修补台</label>
+      <description>一张堆满夹具、备件和溶剂的工作台。放上去的破损装备会被慢慢修回完好状态，过程中消耗修补剂。</description>
+    </RepairBench_Bench>
+  </ThingDef>
+
+  <ThingDef>
+    <RepairBench_RepairKit>
+      <label>修补剂</label>
+      <description>一包补丁、铁丝、备用扣件和溶剂。修补台会消耗它来修复破损的装备。</description>
+    </RepairBench_RepairKit>
+  </ThingDef>
+
+</LanguageData>

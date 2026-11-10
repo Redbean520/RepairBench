@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Repair Bench</name>
+  <author>Redbean</author>
+  <packageId>redbean.repairbench</packageId>
+  <description>Repair Bench —— 把磨损的武器、衣物、护甲修回满耐久。
+
+◆ 玩法
+· 研究「repair techniques」（修补技术）后，命令菜单（Orders）出现「修补」标记。
+· 建好修补台，用钢铁和布料做出「修补剂」，装进台里。
+· 框选地上被磨损的装备打上修补标记，小人会自动搬到修补台消耗修补剂修理，修满 100% 耐久，品质、材质、词条全部保留。
+· 修完留在台旁，不自动归仓；缺台或缺料时地图右上出现提示。
+
+◆ 范围
+· v1 只修地上的装备（武器 / 衣物 / 护甲）。穿戴中或手持中的装备请先放到地上。
+· 任意 mod 的装备都能修，因为修补剂是通用材料。
+· 纯新增内容，不改原版代码，与其它维修类 mod 一般不冲突。
+
+Repair Bench - repair worn weapons, apparel and armor to full hit points.
+Use the "Repair" order on dropped gear, haul it to a repair bench and spend
+generic repair kits. Quality, material and traits are preserved.
+English UI is built in; Chinese translation included.
+by Redbean</description>
+  <supportedVersions>
+    <li>1.7</li>
+  </supportedVersions>
+  <modVersion>0.1.0</modVersion>
+</ModMetaData>

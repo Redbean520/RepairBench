@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <JobDef>
+    <RepairBench_RepairItem>
+      <reportString>正在修补 TargetA。</reportString>
+    </RepairBench_RepairItem>
+  </JobDef>
+
+</LanguageData>

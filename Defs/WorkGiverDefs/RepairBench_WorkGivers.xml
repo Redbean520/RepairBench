@@ -1,0 +1,16 @@
+<Defs>
+
+  <WorkGiverDef>
+    <defName>RepairBench_RepairDesignated</defName>
+    <giverClass>RepairBench.WorkGiver_RepairDesignated</giverClass>
+    <workType>RepairBench_Repairing</workType>
+    <verb>repair</verb>
+    <gerund>repairing</gerund>
+    <priorityInType>40</priorityInType>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+    <scanThings>true</scanThings>
+  </WorkGiverDef>
+
+</Defs>

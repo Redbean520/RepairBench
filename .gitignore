@@ -1,0 +1,20 @@
+# build intermediates
+**/bin/
+**/obj/
+*.pdb
+*.user
+*.suo
+.vs/
+.idea/
+
+# packaging output
+dist/
+*.zip
+
+# system
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# workshop upload id (local only)
+About/PublishedFileId.txt
