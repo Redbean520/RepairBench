@@ -217,10 +217,17 @@ try {
         if ($stack -ne "50") { Fail "C6" "stackLimit is '$stack', expected 50" }
         elseif ($healthPrice -ne "false") { Fail "C6" "healthAffectsPrice is '$healthPrice', expected false" }
         else {
-            $texFile = Join-Path $modRoot ("Textures\" + ($texPath -replace "/", "\") + "_south.png")
-            $texFlat = Join-Path $modRoot ("Textures\" + ($texPath -replace "/", "\") + ".png")
-            if (-not (Test-Path -LiteralPath $texFile) -and -not (Test-Path -LiteralPath $texFlat)) {
-                Warn "C6" "texture missing for $texPath (Task 9 assets)"
+            $gc = Select-Text $node "graphicData/graphicClass"
+            $texBase = Join-Path $modRoot ("Textures\" + ($texPath -replace "/", "\"))
+            if ($gc -match "Graphic_StackCount|Graphic_Collection") {
+                # Graphic_Collection wants a folder of sprites, not a single PNG.
+                if (-not (Test-Path -LiteralPath $texBase -PathType Container) -or
+                    @(Get-ChildItem -LiteralPath $texBase -File -Filter "*.png").Count -eq 0) {
+                    Warn "C6" "stack-count texture folder missing for $texPath"
+                }
+            } elseif (-not (Test-Path -LiteralPath ($texBase + "_south.png")) -and
+                      -not (Test-Path -LiteralPath ($texBase + ".png"))) {
+                Warn "C6" "texture missing for $texPath"
             }
             Pass "C6"
         }
@@ -460,6 +467,17 @@ try {
                 if ($gc -match "Graphic_Multi") {
                     & $probe ($path + "_south") ($f.Name + " (south)")
                     & $probe ($path + "_east") ($f.Name + " (east)")
+                } elseif ($gc -match "Graphic_StackCount|Graphic_Collection") {
+                    # Graphic_Collection resolves texPath to a FOLDER of sprites and splits names on '_'
+                    # (RepairKit_a/_b/_c/_d). A lone PNG here makes the game log
+                    # "Collection cannot init: No textures found at path ...".
+                    $folder = Join-Path $texRoot (& $rel $path)
+                    $script:texChecked++
+                    if (-not (Test-Path -LiteralPath $folder -PathType Container)) {
+                        $texBad.Add("$($f.Name) texPath $path -> folder missing ($gc needs a folder of sprites)")
+                    } elseif (@(Get-ChildItem -LiteralPath $folder -File -Filter "*.png").Count -eq 0) {
+                        $texBad.Add("$($f.Name) texPath $path -> folder has no .png sprites")
+                    }
                 } else {
                     & $probe $path ($f.Name + " texPath")
                 }

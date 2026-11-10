@@ -12,9 +12,13 @@
 | 5 | 有物品带修补标记，但**拆掉/未造**修补台，或把台上修补剂取空 | 右侧出现 Alert（修补台相关），文案为已翻译文本；点击 Alert 跳到相关物品/地图 | 截图（Alert 展开 + 点击后画面）；Player.log 搜 `Alert` |
 | 6 | 修到一半时征召小人 / 让小人去做别的事打断，等它离开后再解除 | 回来后从**断点**继续（进度条不从 0 开始），最终能修满 | 截图（两次进度条对比）；Player.log |
 | 7 | 修理进行中存档 → 退出到主菜单 → 读档 | 标记仍在、进度保留、修补台上修补剂数量与存档前一致 | Player.log 搜 `Scribe` / `RepairBenchProgress` |
-| 8 | 切换语言到「简体中文」，看修补台 / 修补剂 / 研究 / 工作类型 / 设计器提示 / Alert | 全部是中文，没有 `RepairBench_...` 或 `repair kits` 之类的未翻译原文 | 截图（各面板）；missing translation 会在 Player.log 里以 `No translation` 出现 |
+| 8 | 切换语言到「简体中文」，看修补台 / 修补剂 / 研究 / 工作类型 / 设计器提示 / Alert / 右键菜单 | 全部是中文，没有 `RepairBench_...` 或 `repair kits` 之类的未翻译原文 | 截图（各面板）；missing translation 会在 Player.log 里以 `No translation` 出现 |
+| 9 | **右键维修命令**：选中一个小人 → 右键点地上约 50% 耐久的武器 → 选「维修装备」 | 菜单项显示「维修装备」，悬停提示「需要约 5 个修补剂」；点击后物品挂上修补标记（和「修补」命令一样的效果）。对满耐久装备 / 已标记装备右键，菜单项变灰并说明原因 | 截图（右键菜单 + 悬停 tooltip）；Player.log 搜 `FloatMenuOptionProvider` |
+| 10 | **贴图红字修复确认**：造/拿到修补剂，分别看 1 个、约 10 个、50 个堆叠时的图标 | 修补剂显示为锈棕色工具箱图标，堆叠时画出多个箱子（不再显示粉黑方块）；Player.log **不再**出现 `Collection cannot init: No textures found at path Things/Item/Resource/RepairBench/RepairKit` | 截图（三种堆叠）；Player.log 搜 `Collection cannot init` |
 
 补充：
 - 第 3 条若消耗修补剂数量与「缺失耐久 × 10」不符，请记录：修前 HP/最大 HP、台上修补剂前后数量。
 - 第 6 条如果进度归零，说明 MapComponent 进度没接上（已知风险 R12）。
+- 第 9 条右键菜单只在**有小人被选中**时出现（原版机制）；没有小人被选中时不会显示。
+- 第 10 条已修过一次红字：修补剂原是单张 PNG + `Graphic_StackCount`，游戏按文件夹找图会报错；现改为 `RepairKit_a/_b/_c/_d.png` 文件夹。
 - 已知 v1 限制（不算 bug）：穿戴中装备不能标记、修完不自动归仓、不能修建筑。

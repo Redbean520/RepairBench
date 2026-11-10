@@ -8,6 +8,13 @@
   <MessageGearNotOnGround>Only gear lying on the ground can be marked. Take it off or drop it first.</MessageGearNotOnGround>
   <RepairBench_NoUsableBench>No repair bench with enough repair kits.</RepairBench_NoUsableBench>
 
+  <FloatMenuRepairItem>Repair this equipment</FloatMenuRepairItem>
+  <FloatMenuRepairItemDesc>Haul it to a repair bench and restore it to full hit points, spending {0} repair kit(s).</FloatMenuRepairItemDesc>
+  <FloatMenuRepairItemWorn>Repair this equipment (put it on the ground first)</FloatMenuRepairItemWorn>
+  <FloatMenuRepairItemWornDesc>Only equipment lying on the ground can be repaired. Take the apparel off or drop the weapon first.</FloatMenuRepairItemWornDesc>
+  <FloatMenuRepairItemMarked>Repair this equipment (already marked)</FloatMenuRepairItemMarked>
+  <FloatMenuRepairItemMarkedDesc>This item is already marked for repair and a colonist will handle it.</FloatMenuRepairItemMarkedDesc>
+
   <AlertRepairBenchPending>Gear marked for repair</AlertRepairBenchPending>
   <AlertRepairBenchPendingDesc>Marked gear cannot be repaired: there is no repair bench with enough repair kits loaded. Build a repair bench or load more repair kits.</AlertRepairBenchPendingDesc>
 

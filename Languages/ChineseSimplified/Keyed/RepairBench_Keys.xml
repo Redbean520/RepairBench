@@ -8,6 +8,13 @@
   <MessageGearNotOnGround>只能标记放在地上的装备，请先脱下或丢到地上。</MessageGearNotOnGround>
   <RepairBench_NoUsableBench>没有装了足够修补剂的修补台。</RepairBench_NoUsableBench>
 
+  <FloatMenuRepairItem>维修装备</FloatMenuRepairItem>
+  <FloatMenuRepairItemDesc>搬到修补台修满耐久，消耗 {0} 个修补剂。</FloatMenuRepairItemDesc>
+  <FloatMenuRepairItemWorn>维修装备（请先放到地上）</FloatMenuRepairItemWorn>
+  <FloatMenuRepairItemWornDesc>只能修理放在地上的装备，请先脱下衣物或丢下武器。</FloatMenuRepairItemWornDesc>
+  <FloatMenuRepairItemMarked>维修装备（已标记）</FloatMenuRepairItemMarked>
+  <FloatMenuRepairItemMarkedDesc>这件装备已经带修补标记，小人会自动处理。</FloatMenuRepairItemMarkedDesc>
+
   <AlertRepairBenchPending>有装备等待修补</AlertRepairBenchPending>
   <AlertRepairBenchPendingDesc>已标记的装备无法修理：没有装了足够修补剂的修补台。请建造修补台或补满修补剂。</AlertRepairBenchPendingDesc>
 

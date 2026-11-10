@@ -19,13 +19,14 @@ namespace RepairBench
             }
         }
 
-        public static bool IsValidItem(Thing t)
+        /// <summary>
+        /// Weapon or apparel that can hold hit points and is a single item, regardless of where it
+        /// is (ground, held, worn) or how damaged it is. Shared by the designated-item checks and
+        /// by the right-click command, which also wants to react to worn gear.
+        /// </summary>
+        public static bool IsGear(Thing t)
         {
             if (t == null || t.def == null)
-            {
-                return false;
-            }
-            if (!t.Spawned)
             {
                 return false;
             }
@@ -41,7 +42,16 @@ namespace RepairBench
             {
                 return false;
             }
-            if (t.stackCount != 1)
+            return t.stackCount == 1;
+        }
+
+        public static bool IsValidItem(Thing t)
+        {
+            if (!IsGear(t))
+            {
+                return false;
+            }
+            if (!t.Spawned)
             {
                 return false;
             }
