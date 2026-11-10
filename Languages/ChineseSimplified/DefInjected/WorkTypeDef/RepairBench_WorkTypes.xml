@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-
-  <WorkTypeDef>
-    <RepairBench_Repairing>
-      <labelShort>修补</labelShort>
-      <pawnLabel>修补工</pawnLabel>
-      <gerundLabel>修补</gerundLabel>
-      <verb>修补</verb>
-    </RepairBench_Repairing>
-  </WorkTypeDef>
-
+  <RepairBench_Repairing.labelShort>修补</RepairBench_Repairing.labelShort>
+  <RepairBench_Repairing.pawnLabel>修补工</RepairBench_Repairing.pawnLabel>
+  <RepairBench_Repairing.gerundLabel>修补</RepairBench_Repairing.gerundLabel>
+  <RepairBench_Repairing.verb>修补</RepairBench_Repairing.verb>
 </LanguageData>

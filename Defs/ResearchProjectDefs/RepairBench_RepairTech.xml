@@ -10,8 +10,9 @@
     <prerequisites>
       <li>Smithing</li>
     </prerequisites>
-    <researchViewX>1.30</researchViewX>
-    <researchViewY>3.30</researchViewY>
+    <!-- Directly below Smithing (1.00 / 3.50); (1.00, 4.20) is free in Core's 1.7 research grid. -->
+    <researchViewX>1.00</researchViewX>
+    <researchViewY>4.20</researchViewY>
     <generalRules>
       <rulesStrings>
         <li>subject->repair techniques</li>

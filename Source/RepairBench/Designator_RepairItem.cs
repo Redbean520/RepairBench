@@ -8,6 +8,11 @@ namespace RepairBench
     {
         protected override DesignationDef Designation => RepairBenchDefOf.RepairBench_RepairDesignation;
 
+        // Without a draw style DesignatorManager treats the designator as single-cell-only and never
+        // starts a drag, so you cannot sweep a rectangle like vanilla's Harvest/Haul. Same line as
+        // Designator_Haul.
+        public override DrawStyleCategoryDef DrawStyleCategory => DrawStyleCategoryDefOf.FilledRectangle;
+
         public override bool Visible => RepairBenchDefOf.RepairBench_RepairTech.IsFinished || DebugSettings.godMode;
 
         public Designator_RepairItem()

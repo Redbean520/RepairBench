@@ -1,25 +1,41 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-  <ThingDef ParentName="BuildingBase">
+  <!-- ParentName="BenchBase" is what every vanilla workbench uses. It brings the bench look and
+       behaviour: interactionCellIcon=DiningChair (so the spot marker is a chair, not the generic
+       circle), the work-speed report comp, workshop room role, minification and terrain needs.
+       We deliberately do NOT copy ElectricTailoringBench's power / bills / stuff-category parts:
+       this bench is hand-cranked and has no bill tab, it only runs on repair kits. -->
+  <ThingDef ParentName="BenchBase">
     <defName>RepairBench_Bench</defName>
     <label>repair bench</label>
     <description>A cluttered workbench of clamps, spare parts and solvent. Damaged gear left here is slowly restored to full condition, consuming repair kits as the work goes on.</description>
     <thingClass>Building</thingClass>
-    <drawerType>MapMeshAndRealTime</drawerType>
     <graphicData>
       <texPath>Things/Building/Production/RepairBench/RepairBench</texPath>
       <graphicClass>Graphic_Multi</graphicClass>
       <drawSize>(3.5,1.5)</drawSize>
+      <shaderType>CutoutComplex</shaderType>
+      <damageData>
+        <cornerTL>Damage/Corner</cornerTL>
+        <cornerTR>Damage/Corner</cornerTR>
+        <cornerBL>Damage/Corner</cornerBL>
+        <cornerBR>Damage/Corner</cornerBR>
+      </damageData>
       <shadowData>
         <volume>(2.8,0.35,0.59)</volume>
         <offset>(0,0,0.08)</offset>
       </shadowData>
     </graphicData>
+    <castEdgeShadows>true</castEdgeShadows>
+    <staticSunShadowHeight>0.20</staticSunShadowHeight>
     <costList>
       <Steel>75</Steel>
       <Cloth>15</Cloth>
     </costList>
+    <altitudeLayer>Building</altitudeLayer>
+    <fillPercent>0.5</fillPercent>
+    <useHitPoints>true</useHitPoints>
     <statBases>
       <WorkToBuild>2400</WorkToBuild>
       <MaxHitPoints>150</MaxHitPoints>
@@ -29,9 +45,14 @@
     <designationCategory>Production</designationCategory>
     <uiOrder>2510</uiOrder>
     <passability>PassThroughOnly</passability>
+    <pathCost>50</pathCost>
     <hasInteractionCell>true</hasInteractionCell>
     <interactionCellOffset>(0,0,-1)</interactionCellOffset>
+    <surfaceType>Item</surfaceType>
     <constructionSkillPrerequisite>3</constructionSkillPrerequisite>
+    <building>
+      <paintable>true</paintable>
+    </building>
     <comps>
       <li Class="CompProperties_Refuelable">
         <fuelConsumptionRate>0</fuelConsumptionRate>

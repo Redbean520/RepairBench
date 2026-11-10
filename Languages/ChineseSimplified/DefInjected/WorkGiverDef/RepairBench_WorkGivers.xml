@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-
-  <WorkGiverDef>
-    <RepairBench_RepairDesignated>
-      <verb>修补</verb>
-      <gerund>修补</gerund>
-    </RepairBench_RepairDesignated>
-  </WorkGiverDef>
-
+  <RepairBench_RepairDesignated.verb>修补</RepairBench_RepairDesignated.verb>
+  <RepairBench_RepairDesignated.gerund>修补</RepairBench_RepairDesignated.gerund>
 </LanguageData>

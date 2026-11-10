@@ -398,7 +398,10 @@ try {
     else { Pass "C-TranslateKeys" }
 } catch { Fail "C-TranslateKeys" $_.Exception.Message }
 
-# ---------------------------------------------------------------- C-DefInjectedPaths: every DefInjected path exists on a real Def
+# ---------------------------------------------------------------- C-DefInjectedPaths: every DefInjected key is "defName.field" on a real Def
+# 1.7 (Verse/DefInjectionPackage.cs:109-253) only accepts FLAT keys: the element name must be
+# "<defName>.<field>". A nested <ThingDef><defName><field> tree is rejected with "Key lacks a dot"
+# and silently translates nothing, so this contract now enforces the flat shape.
 try {
     $injDir = Join-Path $modRoot "Languages\ChineseSimplified\DefInjected"
     $bad = @()
@@ -412,32 +415,35 @@ try {
                 if ($d.NodeType -ne "Element") { continue }
                 $defNameNode = $d.SelectSingleNode("defName")
                 if ($null -eq $defNameNode) { continue }
-                $defsIndex[$d.LocalName + "/" + $defNameNode.InnerText.Trim()] = $d
+                $defsIndex[$defNameNode.InnerText.Trim()] = @{ Type = $d.LocalName; Node = $d }
             }
         }
         foreach ($f in Get-ChildItem -LiteralPath $injDir -Recurse -File -Filter "*.xml") {
             $doc = LoadXml $f.FullName
-            foreach ($typeNode in $doc.DocumentElement.ChildNodes) {
-                if ($typeNode.NodeType -ne "Element") { continue }
-                $typeName = $typeNode.LocalName
-                foreach ($defNode in $typeNode.ChildNodes) {
-                    if ($defNode.NodeType -ne "Element") { continue }
-                    $defName = $defNode.LocalName
-                    $def = $defsIndex[$typeName + "/" + $defName]
-                    if ($null -eq $def) { $bad += "$($f.Name): no $typeName $defName"; continue }
-                    foreach ($fieldNode in $defNode.ChildNodes) {
-                        if ($fieldNode.NodeType -ne "Element") { continue }
-                        $checked++
-                        $field = $fieldNode.LocalName
-                        if ($null -eq $def.SelectSingleNode($field)) {
-                            $bad += "$($f.Name): $defName has no field '$field' in XML (DefInjected path may still be valid for inherited/default fields)"
-                        }
-                    }
+            $folder = $f.Directory.Name
+            foreach ($node in $doc.DocumentElement.ChildNodes) {
+                if ($node.NodeType -ne "Element") { continue }
+                $key = $node.LocalName
+                $dot = $key.IndexOf(".")
+                if ($dot -le 0) {
+                    $bad += "$($f.Name): key '$key' lacks a dot (1.7 rejects nested DefInjected)"
+                    continue
+                }
+                $checked++
+                $defName = $key.Substring(0, $dot)
+                $fieldPath = $key.Substring($dot + 1)
+                $entry = $defsIndex[$defName]
+                if ($null -eq $entry) { $bad += "$($f.Name): no Def named '$defName' in this mod"; continue }
+                if ($entry.Type -ne $folder) { $bad += "$($f.Name): '$defName' is a $($entry.Type), but the file is under $folder/"; continue }
+                $fieldNode = $entry.Node.SelectSingleNode($fieldPath)
+                if ($null -eq $fieldNode) {
+                    $bad += "$($f.Name): '$defName' has no XML path '$fieldPath' (fine only when the field is inherited/default - add it to Defs to be safe)"
                 }
             }
         }
     }
     if ($bad.Count -gt 0) { Fail "C-DefInjectedPaths" (" | " + ($bad -join " | ")) }
+    elseif ($checked -eq 0) { Warn "C-DefInjectedPaths" "no flat DefInjected keys found"; Pass "C-DefInjectedPaths" }
     else { Pass "C-DefInjectedPaths" }
 } catch { Fail "C-DefInjectedPaths" $_.Exception.Message }
 
