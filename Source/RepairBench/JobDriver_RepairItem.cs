@@ -6,6 +6,13 @@ using Verse.AI;
 
 namespace RepairBench
 {
+    /**
+     * 帮小人修补一件地上装备的 Job。
+     *
+     * 流程：走到装备 -> 拾起 -> 走到修补台互动格 -> 把装备摆到台面上
+     *      -> 面向台面工作（原版 Repair 火花粒子 + 修理音效 + 进度条）
+     *      -> 原子完成（扣修补剂、耐久回满、清进度与标记）-> 把修好的装备放回台旁地面。
+     */
     public class JobDriver_RepairItem : JobDriver
     {
         private int cachedTicksTotal = -1;
@@ -64,12 +71,18 @@ namespace RepairBench
             gotoBench.FailOnDestroyedOrNull(TargetIndex.B);
             yield return gotoBench;
 
-            Toil drop = ToilMaker.MakeToil("RepairBench_DropCarriedItem");
-            drop.initAction = () =>
+            // 把装备摆到修补台台面（原版工作台手感）；台面没有空格时退回台旁地面，流程仍可完成。
+            Toil placeOnBench = ToilMaker.MakeToil("RepairBench_PlaceItemOnBench");
+            placeOnBench.initAction = () =>
             {
                 if (pawn.carryTracker.CarriedThing == null)
                 {
                     EndJobWith(JobCondition.Incompletable);
+                    return;
+                }
+                IntVec3 benchCell = FindFreeBenchCell();
+                if (benchCell.IsValid && pawn.carryTracker.TryDropCarriedThing(benchCell, ThingPlaceMode.Direct, out _))
+                {
                     return;
                 }
                 if (!pawn.carryTracker.TryDropCarriedThing(pawn.Position, ThingPlaceMode.Near, out _))
@@ -77,8 +90,8 @@ namespace RepairBench
                     EndJobWith(JobCondition.Incompletable);
                 }
             };
-            drop.defaultCompleteMode = ToilCompleteMode.Instant;
-            yield return drop;
+            placeOnBench.defaultCompleteMode = ToilCompleteMode.Instant;
+            yield return placeOnBench;
 
             Thing item = Item;
             int total = TicksTotal;
@@ -100,13 +113,66 @@ namespace RepairBench
                 int current = progress != null ? progress.Get(item) : 0;
                 return total > 0 ? Mathf.Clamp01((float)current / total) : 1f;
             });
-            wait.PlaySustainerOrSound(() => SoundDef.Named("Recipe_Smith"));
+            // 原版 Repair effecter = 火花粒子（工作动画）+ Interact_Repair 修理音效（sustainer）。
+            // 从 BenchBase/BuildingBase 继承的 repairEffect 就是它，不写死字符串。
+            wait.WithEffect(() => RepairBenchDefOf.RepairBench_Bench?.repairEffect, TargetIndex.A);
+            wait.activeSkill = () => SkillDefOf.Crafting;
             wait.FailOnDestroyedOrNull(TargetIndex.A);
             wait.FailOnDestroyedOrNull(TargetIndex.B);
             wait.AddFailCondition(() => !IsStillDesignated(item));
             yield return wait;
 
             yield return Toils_General.DoAtomic(FinishRepair);
+        }
+
+        /**
+         * 台面上离小人最近的空格子；都占着就返回 Invalid（调用方退回落地面）。
+         * 工作台每格只允许 1 个物品（BuildingProperties.maxItemsInCell 默认 1），所以 3x1 的台最多摆 3 件。
+         */
+        private IntVec3 FindFreeBenchCell()
+        {
+            Thing bench = Bench;
+            Map map = pawn.Map;
+            if (bench == null || map == null)
+            {
+                return IntVec3.Invalid;
+            }
+            IntVec3 best = IntVec3.Invalid;
+            int bestDist = int.MaxValue;
+            foreach (IntVec3 cell in bench.OccupiedRect().Cells)
+            {
+                if (!cell.InBounds(map) || cell.GetItemCount(map) > 0)
+                {
+                    continue;
+                }
+                int dist = (cell - pawn.Position).LengthHorizontalSquared;
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    best = cell;
+                }
+            }
+            return best;
+        }
+
+        /** 修好后把装备从台面挪到台旁地面，避免占着工作台格子挡住下一件。 */
+        private void MoveItemOffBench(Thing item, Thing bench)
+        {
+            if (item == null || bench == null || !item.Spawned)
+            {
+                return;
+            }
+            if (!bench.OccupiedRect().Contains(item.Position))
+            {
+                return;
+            }
+            Map map = pawn.Map;
+            IntVec3 dropCell = bench.InteractionCell.IsValid ? bench.InteractionCell : pawn.Position;
+            item.DeSpawn();
+            if (!GenPlace.TryPlaceThing(item, dropCell, map, ThingPlaceMode.Near, out _))
+            {
+                GenSpawn.Spawn(item, dropCell, map);
+            }
         }
 
         private bool IsStillDesignated(Thing item)
@@ -133,6 +199,7 @@ namespace RepairBench
                 progress.Clear(item);
             }
             pawn.Map.designationManager.TryRemoveDesignationOn(item, RepairBenchDefOf.RepairBench_RepairDesignation);
+            MoveItemOffBench(item, bench);
         }
     }
 }

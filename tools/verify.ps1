@@ -527,6 +527,41 @@ try {
     else { Pass "C-Tex" }
 } catch { Fail "C-Tex" $_.Exception.Message }
 
+# ---------------------------------------------------------------- C-JobFx: item goes onto the bench, work effect + sound, bench cleared afterwards
+try {
+    $jdPath = Join-Path $modRoot "Source\RepairBench\JobDriver_RepairItem.cs"
+    if (-not (Test-Path -LiteralPath $jdPath)) { Fail "C-JobFx" "JobDriver_RepairItem.cs missing" }
+    else {
+        $jd = [System.IO.File]::ReadAllText($jdPath)
+        $fxBad = New-Object System.Collections.Generic.List[string]
+        # Work animation + sound come from the vanilla Repair effecter (sparks + Interact_Repair),
+        # inherited by the bench from BuildingBase.repairEffect.
+        if ($jd -notmatch 'WithEffect\s*\(') { $fxBad.Add("no WithEffect(...): no work-animation particles/sound") }
+        if ($jd -notmatch 'repairEffect') { $fxBad.Add("no repairEffect: animation must use the bench's vanilla repair effecter") }
+        # The repaired item must be laid on the bench top, and cleared off it when done.
+        if ($jd -notmatch 'ThingPlaceMode\.Direct') { $fxBad.Add("no ThingPlaceMode.Direct: item is not placed on the bench top") }
+        if ($jd -notmatch 'GenPlace\.TryPlaceThing') { $fxBad.Add("no GenPlace.TryPlaceThing: item never leaves the bench after repair") }
+        if ($jd -notmatch 'SkillDefOf\.Crafting') { $fxBad.Add("no SkillDefOf.Crafting: no skill while repairing") }
+        if ($fxBad.Count -gt 0) { Fail "C-JobFx" (" | " + ($fxBad -join " | ")) } else { Pass "C-JobFx" }
+    }
+} catch { Fail "C-JobFx" $_.Exception.Message }
+
+# ---------------------------------------------------------------- C-KitTex: repair kit keeps one fixed sprite for every stack count
+try {
+    $node = Get-DefNode "Defs\ThingDefs_Items\RepairBench_RepairKit.xml" "RepairBench_RepairKit"
+    if ($null -eq $node) { Fail "C-KitTex" "RepairBench_RepairKit not found" }
+    else {
+        $gc = Select-Text $node "graphicData/graphicClass"
+        $texPath = Select-Text $node "graphicData/texPath"
+        if ($gc -ne "Graphic_Single") {
+            Fail "C-KitTex" "graphicClass is '$gc', expected Graphic_Single so 1/10/50 kits all show the same sprite"
+        } else {
+            $png = Join-Path $modRoot ("Textures\" + ($texPath -replace "/", "\") + ".png")
+            if (-not (Test-Path -LiteralPath $png)) { Fail "C-KitTex" "single sprite missing: $texPath.png" } else { Pass "C-KitTex" }
+        }
+    }
+} catch { Fail "C-KitTex" $_.Exception.Message }
+
 # ---------------------------------------------------------------- summary
 Write-Host ""
 if ($script:failures -gt 0) {

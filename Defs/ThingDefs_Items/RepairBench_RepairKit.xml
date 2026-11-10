@@ -7,7 +7,7 @@
     <description>A bundle of patches, wire, spare fasteners and solvent. Repair benches consume these to restore damaged equipment.</description>
     <graphicData>
       <texPath>Things/Item/Resource/RepairBench/RepairKit</texPath>
-      <graphicClass>Graphic_StackCount</graphicClass>
+      <graphicClass>Graphic_Single</graphicClass>
     </graphicData>
     <stackLimit>50</stackLimit>
     <healthAffectsPrice>false</healthAffectsPrice>
