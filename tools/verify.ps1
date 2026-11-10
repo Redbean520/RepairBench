@@ -434,6 +434,75 @@ try {
     else { Pass "C-DefInjectedPaths" }
 } catch { Fail "C-DefInjectedPaths" $_.Exception.Message }
 
+# ---------------------------------------------------------------- C-Tex: every referenced texture exists
+try {
+    $texRoot = Join-Path $modRoot "Textures"
+    $texBad = New-Object System.Collections.Generic.List[string]
+    $script:texChecked = 0
+    $rel = { param($p) $p.Replace("/", "\") }
+    $probe = {
+        param([string]$path, [string]$who)
+        $script:texChecked++
+        $full = Join-Path $texRoot (& $rel $path)
+        if (-not (Test-Path -LiteralPath ($full + ".png"))) {
+            $texBad.Add("$who -> Textures/$path.png missing")
+        }
+    }
+    # Def texture paths (graphicData/texPath + DesignationDef/texturePath)
+    $defsDir = Join-Path $modRoot "Defs"
+    if (Test-Path -LiteralPath $defsDir) {
+        foreach ($f in Get-ChildItem -LiteralPath $defsDir -Recurse -File -Filter "*.xml") {
+            $doc = LoadXml $f.FullName
+            foreach ($g in $doc.SelectNodes("//*[texPath]")) {
+                $path = $g.SelectSingleNode("texPath").InnerText.Trim()
+                $gcNode = $g.SelectSingleNode("graphicClass")
+                $gc = if ($null -ne $gcNode) { $gcNode.InnerText.Trim() } else { "" }
+                if ($gc -match "Graphic_Multi") {
+                    & $probe ($path + "_south") ($f.Name + " (south)")
+                    & $probe ($path + "_east") ($f.Name + " (east)")
+                } else {
+                    & $probe $path ($f.Name + " texPath")
+                }
+            }
+            foreach ($d in $doc.SelectNodes("//DesignationDef/texturePath")) {
+                $dp = $d.InnerText.Trim()
+                & $probe $dp ($f.Name + " designation")
+            }
+        }
+    }
+    # ContentFinder paths used from C#
+    $srcDir = Join-Path $modRoot "Source"
+    if (Test-Path -LiteralPath $srcDir) {
+        foreach ($f in Get-ChildItem -LiteralPath $srcDir -Recurse -File -Filter "*.cs") {
+            $text = [System.IO.File]::ReadAllText($f.FullName)
+            foreach ($m in [regex]::Matches($text, 'ContentFinder<Texture2D>\s*\.\s*Get\s*\(\s*"([^"]+)"')) {
+                & $probe $m.Groups[1].Value ($f.Name + " ContentFinder")
+            }
+        }
+    }
+    # About images (ModIcon 128, Preview 1280x720)
+    Add-Type -AssemblyName System.Drawing
+    $aboutChecks = @(
+        @{ Name = "ModIcon.png"; W = 128; H = 128 },
+        @{ Name = "Preview.png"; W = 1280; H = 720 }
+    )
+    foreach ($a in $aboutChecks) {
+        $p = Join-Path $modRoot ("About\" + $a.Name)
+        if (-not (Test-Path -LiteralPath $p)) { $texBad.Add("About/$($a.Name) missing") }
+        else {
+            $img = [System.Drawing.Image]::FromFile($p)
+            try {
+                if ($img.Width -ne $a.W -or $img.Height -ne $a.H) {
+                    $texBad.Add("About/$($a.Name) is $($img.Width)x$($img.Height), expected $($a.W)x$($a.H)")
+                }
+            } finally { $img.Dispose() }
+        }
+    }
+    if ($texBad.Count -gt 0) { Fail "C-Tex" (" | " + ($texBad -join " | ")) }
+    elseif ($script:texChecked -eq 0) { Warn "C-Tex" "no texture references found"; Pass "C-Tex" }
+    else { Pass "C-Tex" }
+} catch { Fail "C-Tex" $_.Exception.Message }
+
 # ---------------------------------------------------------------- summary
 Write-Host ""
 if ($script:failures -gt 0) {

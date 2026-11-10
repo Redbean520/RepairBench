@@ -11,6 +11,10 @@
       <texPath>Things/Building/Production/RepairBench/RepairBench</texPath>
       <graphicClass>Graphic_Multi</graphicClass>
       <drawSize>(3.5,1.5)</drawSize>
+      <shadowData>
+        <volume>(2.8,0.35,0.59)</volume>
+        <offset>(0,0,0.08)</offset>
+      </shadowData>
     </graphicData>
     <costList>
       <Steel>75</Steel>
