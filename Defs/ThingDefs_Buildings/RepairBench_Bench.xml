@@ -22,10 +22,10 @@
         <cornerBL>Damage/Corner</cornerBL>
         <cornerBR>Damage/Corner</cornerBR>
       </damageData>
-      <shadowData>
-        <volume>(2.8,0.35,0.59)</volume>
-        <offset>(0,0,0.08)</offset>
-      </shadowData>
+      <!-- 不要在这里写 shadowData：1.7 会报
+           "graphicData defines a shadowInfo but staticSunShadowHeight > 0"
+           （DefDatabase.ErrorCheckAllDefs）。原版缝纫台同样是 castEdgeShadows + staticSunShadowHeight，
+           没有 shadowData。 -->
     </graphicData>
     <castEdgeShadows>true</castEdgeShadows>
     <staticSunShadowHeight>0.20</staticSunShadowHeight>
@@ -55,6 +55,10 @@
     </building>
     <comps>
       <li Class="CompProperties_Refuelable">
+        <!-- 自定义 comp：保留原版装料逻辑，另外在检视面板加一句红字缺料提示。 -->
+        <compClass>RepairBench.CompRepairBench</compClass>
+        <!-- 选中台就能看到燃料条（= 修补剂余量），不必先打开检视面板。 -->
+        <showFuelGizmo>true</showFuelGizmo>
         <fuelConsumptionRate>0</fuelConsumptionRate>
         <fuelCapacity>20</fuelCapacity>
         <autoRefuelPercent>0.9</autoRefuelPercent>

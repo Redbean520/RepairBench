@@ -21,6 +21,7 @@ namespace RepairBench
             Use(new RepairBenchProgress(null));
             Use(new Alert_RepairBenchPending());
             Use(new FloatMenuOptionProvider_RepairBench());
+            Use(new CompRepairBench());
         }
 
         private static void Use(WorkGiver_Scanner value) { }
@@ -30,5 +31,6 @@ namespace RepairBench
         private static void Use(MapComponent value) { }
         private static void Use(Alert value) { }
         private static void Use(FloatMenuOptionProvider value) { }
+        private static void Use(ThingComp value) { }
     }
 }

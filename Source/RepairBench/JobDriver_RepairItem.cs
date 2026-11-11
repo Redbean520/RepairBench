@@ -3,6 +3,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using Verse.Sound;
 
 namespace RepairBench
 {
@@ -10,7 +11,7 @@ namespace RepairBench
      * 帮小人修补一件地上装备的 Job。
      *
      * 流程：走到装备 -> 拾起 -> 走到修补台互动格 -> 把装备摆到台面上
-     *      -> 面向台面工作（原版 Repair 火花粒子 + 修理音效 + 进度条）
+     *      -> 面向台面工作（自制修补特效：金属屑 + 锉磨循环音 + 进度条）
      *      -> 原子完成（扣修补剂、耐久回满、清进度与标记）-> 把修好的装备放回台旁地面。
      */
     public class JobDriver_RepairItem : JobDriver
@@ -113,9 +114,9 @@ namespace RepairBench
                 int current = progress != null ? progress.Get(item) : 0;
                 return total > 0 ? Mathf.Clamp01((float)current / total) : 1f;
             });
-            // 原版 Repair effecter = 火花粒子（工作动画）+ Interact_Repair 修理音效（sustainer）。
-            // 从 BenchBase/BuildingBase 继承的 repairEffect 就是它，不写死字符串。
-            wait.WithEffect(() => RepairBenchDefOf.RepairBench_Bench?.repairEffect, TargetIndex.A);
+            // 自己的修补特效：自定义锉磨音（sustainer）+ 崩出的金属屑，见 Defs/Effects/RepairBench_Effecters.xml。
+            // 不用从 BuildingBase 继承的原版 repairEffect（那是焊花 + 原版修理音，语义不对）。
+            wait.WithEffect(() => RepairBenchDefOf.RepairBench_RepairEffect, TargetIndex.A);
             wait.activeSkill = () => SkillDefOf.Crafting;
             wait.FailOnDestroyedOrNull(TargetIndex.A);
             wait.FailOnDestroyedOrNull(TargetIndex.B);
@@ -200,6 +201,11 @@ namespace RepairBench
             }
             pawn.Map.designationManager.TryRemoveDesignationOn(item, RepairBenchDefOf.RepairBench_RepairDesignation);
             MoveItemOffBench(item, bench);
+            // 收尾音：一声金属扣合，提示「这件修好了」。
+            if (RepairBenchDefOf.RepairBench_RepairDone != null)
+            {
+                RepairBenchDefOf.RepairBench_RepairDone.PlayOneShot(new TargetInfo(bench.Position, pawn.Map));
+            }
         }
     }
 }

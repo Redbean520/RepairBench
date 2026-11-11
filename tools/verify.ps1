@@ -492,6 +492,18 @@ try {
                 $dp = $d.InnerText.Trim()
                 & $probe $dp ($f.Name + " designation")
             }
+            # SoundDef clips live under Sounds/, not Textures/. A typo here only shows up as
+            # "Grain couldn't resolve: Clip not found at ..." in game, so check it statically.
+            foreach ($c in $doc.SelectNodes("//*[clipPath]")) {
+                $cp = $c.SelectSingleNode("clipPath").InnerText.Trim()
+                $script:texChecked++
+                $relClip = & $rel $cp
+                $found = $false
+                foreach ($ext in @(".wav", ".ogg", ".mp3")) {
+                    if (Test-Path -LiteralPath (Join-Path $modRoot ("Sounds\" + $relClip + $ext))) { $found = $true }
+                }
+                if (-not $found) { $texBad.Add("$($f.Name) clipPath $cp -> Sounds/$cp.(wav|ogg|mp3) missing") }
+            }
         }
     }
     # ContentFinder paths used from C#
@@ -534,10 +546,12 @@ try {
     else {
         $jd = [System.IO.File]::ReadAllText($jdPath)
         $fxBad = New-Object System.Collections.Generic.List[string]
-        # Work animation + sound come from the vanilla Repair effecter (sparks + Interact_Repair),
-        # inherited by the bench from BuildingBase.repairEffect.
+        # Work animation + sound must be OUR OWN effecter (metal shavings + filed-metal loop), not the
+        # vanilla BuildingBase.repairEffect (weld sparks + vanilla repair sound).
         if ($jd -notmatch 'WithEffect\s*\(') { $fxBad.Add("no WithEffect(...): no work-animation particles/sound") }
-        if ($jd -notmatch 'repairEffect') { $fxBad.Add("no repairEffect: animation must use the bench's vanilla repair effecter") }
+        if ($jd -notmatch 'RepairBench_RepairEffect') { $fxBad.Add("no RepairBench_RepairEffect: work animation must use the mod's own effecter") }
+        if ($jd -match 'RepairBench_Bench\?\.repairEffect') { $fxBad.Add("still uses the inherited vanilla repairEffect (sparks)") }
+        if ($jd -notmatch 'RepairBench_RepairDone') { $fxBad.Add("no RepairBench_RepairDone: no custom finish sound") }
         # The repaired item must be laid on the bench top, and cleared off it when done.
         if ($jd -notmatch 'ThingPlaceMode\.Direct') { $fxBad.Add("no ThingPlaceMode.Direct: item is not placed on the bench top") }
         if ($jd -notmatch 'GenPlace\.TryPlaceThing') { $fxBad.Add("no GenPlace.TryPlaceThing: item never leaves the bench after repair") }
@@ -561,6 +575,148 @@ try {
         }
     }
 } catch { Fail "C-KitTex" $_.Exception.Message }
+
+
+# ---------------------------------------------------------------- C-Fx: custom effecter / fleck / sound defs are wired correctly
+try {
+    $defIndex = @{}
+    foreach ($f in Get-ChildItem -LiteralPath (Join-Path $modRoot "Defs") -Recurse -File -Filter "*.xml") {
+        $doc = LoadXml $f.FullName
+        foreach ($n in $doc.SelectNodes("//Defs/*")) {
+            $dn = $n.SelectSingleNode("defName")
+            if ($null -ne $dn) { $defIndex[$dn.InnerText.Trim()] = $n.LocalName }
+        }
+    }
+    $fxBad = New-Object System.Collections.Generic.List[string]
+
+    # Effecter: one sustainer (our loop sound) + one sprayer (our metal shavings).
+    $eff = $null
+    foreach ($f in Get-ChildItem -LiteralPath (Join-Path $modRoot "Defs\Effects") -File -Filter "*.xml") {
+        $doc = LoadXml $f.FullName
+        $hit = $doc.SelectSingleNode("//EffecterDef[defName='RepairBench_RepairEffect']")
+        if ($null -ne $hit) { $eff = $hit }
+    }
+    if ($null -eq $eff) { $fxBad.Add("EffecterDef RepairBench_RepairEffect missing") }
+    else {
+        $sustainer = $false; $sprayer = $false
+        foreach ($child in $eff.SelectNodes("children/li")) {
+            $cls = Select-Text $child "subEffecterClass"
+            $sd = Select-Text $child "soundDef"
+            $fd = Select-Text $child "fleckDef"
+            if (-not $cls) { $fxBad.Add("effecter child without subEffecterClass (ConfigErrors: null SubEffecterDef)") }
+            if ($cls -match "Sustainer") {
+                $sustainer = $true
+                if (-not $sd) { $fxBad.Add("sustainer child without soundDef: no loop sound") }
+                elseif ($defIndex[$sd] -ne "SoundDef") { $fxBad.Add("sustainer soundDef '$sd' is not a SoundDef in this mod") }
+            }
+            if ($cls -match "Sprayer") {
+                $sprayer = $true
+                if (-not $fd) { $fxBad.Add("sprayer child without fleckDef: no particles") }
+                elseif ($defIndex[$fd] -ne "FleckDef") { $fxBad.Add("sprayer fleckDef '$fd' is not a FleckDef in this mod") }
+            }
+        }
+        if (-not $sustainer) { $fxBad.Add("effecter has no SubEffecter_Sustainer: repair would be silent") }
+        if (-not $sprayer) { $fxBad.Add("effecter has no SubEffecter_Sprayer*: no metal shavings") }
+    }
+
+    # Fleck: every randomGraphics entry needs its own graphicClass, otherwise GraphicData.Init()
+    # leaves cachedGraphic null and the game logs a FleckDef config error.
+    $fleck = $null
+    foreach ($f in Get-ChildItem -LiteralPath (Join-Path $modRoot "Defs\Effects") -File -Filter "*.xml") {
+        $doc = LoadXml $f.FullName
+        $hit = $doc.SelectSingleNode("//FleckDef[defName='RepairBench_MetalShaving']")
+        if ($null -ne $hit) { $fleck = $hit }
+    }
+    if ($null -eq $fleck) { $fxBad.Add("FleckDef RepairBench_MetalShaving missing") }
+    else {
+        # fleckSystemClass may be inherited (we derive from FleckBase_Thrown, which sets FleckSystemThrown),
+        # so walk the ParentName chain through Core before declaring it missing.
+        if (-not (Select-Text $fleck "fleckSystemClass")) {
+            $named = @{}
+            $coreFiles = @()
+            if (Test-Path -LiteralPath $CoreDir) {
+                $coreFiles += Get-ChildItem -LiteralPath $CoreDir -Recurse -File -Filter "*.xml" -ErrorAction SilentlyContinue
+            }
+            $dlcRoot = Join-Path (Split-Path -Parent $CoreDir) ".."
+            if (Test-Path -LiteralPath $dlcRoot) {
+                $coreFiles += Get-ChildItem -LiteralPath (Resolve-Path $dlcRoot).Path -Recurse -File -Filter "*.xml" -ErrorAction SilentlyContinue |
+                    Where-Object { $_.FullName -match '\\Defs\\' }
+            }
+            foreach ($cf in $coreFiles) {
+                try { $cdoc = LoadXml $cf.FullName } catch { continue }
+                foreach ($fd in $cdoc.SelectNodes("//FleckDef[@Name]")) {
+                    $named[$fd.GetAttribute("Name")] = $fd
+                }
+            }
+            $cur = $fleck
+            $has = $false
+            for ($hop = 0; $hop -lt 8; $hop++) {
+                $pn = $cur.GetAttribute("ParentName")
+                if (-not $pn -or -not $named.ContainsKey($pn)) { break }
+                $cur = $named[$pn]
+                if (Select-Text $cur "fleckSystemClass") { $has = $true; break }
+            }
+            if (-not $has) { $fxBad.Add("fleck has no fleckSystemClass (own or inherited)") }
+        }
+        $graphics = @($fleck.SelectNodes("randomGraphics/li"))
+        if ($graphics.Count -eq 0) {
+            if ($null -eq $fleck.SelectSingleNode("graphicData")) { $fxBad.Add("fleck has neither graphicData nor randomGraphics") }
+        } else {
+            $i = 0
+            foreach ($g in $graphics) {
+                $i++
+                if (-not (Select-Text $g "graphicClass")) { $fxBad.Add("fleck randomGraphics[$i] has no graphicClass") }
+                if (-not (Select-Text $g "texPath")) { $fxBad.Add("fleck randomGraphics[$i] has no texPath") }
+            }
+        }
+    }
+
+    # Sounds: the done sound must NOT be a sustainer, the loop sound MUST be one.
+    $sounds = @{}
+    foreach ($f in Get-ChildItem -LiteralPath (Join-Path $modRoot "Defs\SoundDefs") -File -Filter "*.xml") {
+        $doc = LoadXml $f.FullName
+        foreach ($s in $doc.SelectNodes("//SoundDef")) {
+            $dn = Select-Text $s "defName"
+            if ($dn) { $sounds[$dn] = $s }
+        }
+    }
+    if (-not $sounds.ContainsKey("RepairBench_RepairSustain")) { $fxBad.Add("SoundDef RepairBench_RepairSustain missing") }
+    elseif ((Select-Text $sounds["RepairBench_RepairSustain"] "sustain") -ne "True") {
+        $fxBad.Add("RepairBench_RepairSustain must be a sustainer (used by SubEffecter_Sustainer)")
+    }
+    if (-not $sounds.ContainsKey("RepairBench_RepairDone")) { $fxBad.Add("SoundDef RepairBench_RepairDone missing") }
+    elseif ((Select-Text $sounds["RepairBench_RepairDone"] "sustain") -eq "True") {
+        $fxBad.Add("RepairBench_RepairDone must be a one-shot (PlayOneShot) sound, not a sustainer")
+    }
+
+    if ($fxBad.Count -gt 0) { Fail "C-Fx" (" | " + ($fxBad -join " | ")) } else { Pass "C-Fx" }
+} catch { Fail "C-Fx" $_.Exception.Message }
+
+# ---------------------------------------------------------------- C-Deploy: deploy.ps1 copies every folder the game reads
+try {
+    $dp = Join-Path $modRoot "tools\deploy.ps1"
+    if (-not (Test-Path -LiteralPath $dp)) { Fail "C-Deploy" "tools/deploy.ps1 missing" }
+    else {
+        $dtext = [System.IO.File]::ReadAllText($dp)
+        $m = [regex]::Match($dtext, '(?s)\$include\s*=\s*@\(([^)]*)\)')
+        if (-not $m.Success) { Fail "C-Deploy" 'cannot find the include whitelist in tools/deploy.ps1' }
+        else {
+            $listed = @()
+            foreach ($x in [regex]::Matches($m.Groups[1].Value, '"([^"]+)"')) { $listed += $x.Groups[1].Value }
+            $missing = @()
+            # Anything the game reads from the mod root must be deployed; a folder that exists here but
+            # is not copied is silently absent in game (this is how Sounds/ once went missing).
+            foreach ($dir in @("About", "Defs", "Patches", "Textures", "Languages", "Sounds", "1.7")) {
+                $p = Join-Path $modRoot $dir
+                if ((Test-Path -LiteralPath $p -PathType Container) -and ($listed -notcontains $dir)) { $missing += $dir }
+            }
+            if ($listed -notcontains "LoadFolders.xml") { $missing += "LoadFolders.xml" }
+            if ($missing.Count -gt 0) {
+                Fail "C-Deploy" ('deploy.ps1 include list does not copy: ' + ($missing -join ", "))
+            } else { Pass "C-Deploy" }
+        }
+    }
+} catch { Fail "C-Deploy" $_.Exception.Message }
 
 # ---------------------------------------------------------------- summary
 Write-Host ""

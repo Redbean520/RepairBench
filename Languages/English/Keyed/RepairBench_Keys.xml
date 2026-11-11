@@ -7,6 +7,7 @@
   <MessageAlreadyRepaired>Already at full hit points.</MessageAlreadyRepaired>
   <MessageGearNotOnGround>Only gear lying on the ground can be marked. Take it off or drop it first.</MessageGearNotOnGround>
   <RepairBench_NoUsableBench>No repair bench with enough repair kits.</RepairBench_NoUsableBench>
+  <RepairBench_NoKitsInBench>Not enough repair kits loaded - load more repair kits before repairing.</RepairBench_NoKitsInBench>
 
   <FloatMenuRepairItem>Repair this equipment</FloatMenuRepairItem>
   <FloatMenuRepairItemDesc>Haul it to a repair bench and restore it to full hit points, spending {0} repair kit(s).</FloatMenuRepairItemDesc>

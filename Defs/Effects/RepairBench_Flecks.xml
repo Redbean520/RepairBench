@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- 修补时从装备上崩下来的金属屑。用自绘的 16px 亮色碎片贴图，飞出去短距离后淡出。
+       为什么不用原版 SparkFlash / Mote_SparkThrown：那是「电火花」，修补一件旧枪/旧夹克
+       不该冒焊花；屑片更贴合「锉、磨、换零件」的语义。 -->
+  <!-- 父类必须是 FleckBase_RandomGraphic_Thrown：它不带 graphicData，randomGraphics 才会生效，
+       并且 fleckSystemClass 已是 FleckSystemThrown。若挂 FleckBase_Thrown，会继承一个没有 texPath
+       的 graphicData，GetGraphicData() 直接返回它、忽略 randomGraphics，屑片根本画不出来。 -->
+  <FleckDef ParentName="FleckBase_RandomGraphic_Thrown">
+    <defName>RepairBench_MetalShaving</defName>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <randomGraphics>
+      <li>
+        <graphicClass>Graphic_Fleck</graphicClass>
+        <shaderType>Mote</shaderType>
+        <texPath>Things/Mote/RepairBench/MetalShaving</texPath>
+        <renderInstanced>true</renderInstanced>
+        <drawSize>0.16</drawSize>
+      </li>
+      <li>
+        <graphicClass>Graphic_Fleck</graphicClass>
+        <shaderType>Mote</shaderType>
+        <texPath>Things/Mote/RepairBench/MetalShaving_b</texPath>
+        <renderInstanced>true</renderInstanced>
+        <drawSize>0.16</drawSize>
+      </li>
+      <li>
+        <graphicClass>Graphic_Fleck</graphicClass>
+        <shaderType>Mote</shaderType>
+        <texPath>Things/Mote/RepairBench/MetalShaving_c</texPath>
+        <renderInstanced>true</renderInstanced>
+        <drawSize>0.16</drawSize>
+      </li>
+    </randomGraphics>
+    <fadeInTime>0.02</fadeInTime>
+    <solidTime>0.06</solidTime>
+    <fadeOutTime>0.34</fadeOutTime>
+    <!-- 用原版的「抛物线」而不是重力加速度：FleckThrown 的 y 是独立高度通道，
+         写 acceleration (0,0,-9) 会让屑片 0.4s 内沉到地面以下 0.7 格（视觉上穿地）。
+         archHeight/archDuration 才是「弹起再落下」的正规做法。 -->
+    <archHeight>0.22~0.40</archHeight>
+    <archDuration>0.26~0.42</archDuration>
+  </FleckDef>
+
+</Defs>

@@ -13,7 +13,9 @@ namespace RepairBench
     {
         public Alert_RepairBenchPending()
         {
-            defaultPriority = AlertPriority.Medium;
+            // High 而不是 Medium：Medium 会排在右侧警报列表下方、不响铃，玩家很容易完全没注意到。
+            // 这条警报代表「已经标了要修、但修不了」，属于需要玩家马上处理的阻塞状态。
+            defaultPriority = AlertPriority.High;
             defaultLabel = "AlertRepairBenchPending".Translate();
             defaultExplanation = "AlertRepairBenchPendingDesc".Translate();
         }

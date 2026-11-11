@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- 修补特效：自定义锉磨音（Sounds/RepairBench/RepairLoop.wav，循环 sustainer）
+       + 间歇崩出的金属屑（RepairBench_MetalShaving）。替代原版 BuildingBase.repairEffect，
+       不再借用原版 Repair 的焊花与 WeidLoop 音效。 -->
+  <EffecterDef>
+    <defName>RepairBench_RepairEffect</defName>
+    <positionRadius>0.08</positionRadius>
+    <children>
+      <li>
+        <subEffecterClass>SubEffecter_Sustainer</subEffecterClass>
+        <soundDef>RepairBench_RepairSustain</soundDef>
+      </li>
+      <li>
+        <subEffecterClass>SubEffecter_SprayerContinuous</subEffecterClass>
+        <fleckDef>RepairBench_MetalShaving</fleckDef>
+        <spawnLocType>RandomDrawPosOnTarget</spawnLocType>
+        <ticksBetweenMotes>7</ticksBetweenMotes>
+        <maxMoteCount>6000</maxMoteCount>
+        <burstCount>3~4</burstCount>
+        <positionRadius>0.04</positionRadius>
+        <scale>0.75~1.35</scale>
+        <!-- 全方向散开；不写 fleckUsesAngleForVelocity 时 angle 不参与 fleck 的初速方向，
+             所有屑片会朝同一个方向飞。 -->
+        <fleckUsesAngleForVelocity>true</fleckUsesAngleForVelocity>
+        <angle>0~360</angle>
+        <speed>0.35~0.9</speed>
+        <rotationRate>-280~280</rotationRate>
+      </li>
+    </children>
+  </EffecterDef>
+
+</Defs>

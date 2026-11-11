@@ -12,7 +12,9 @@ $targetDir = Join-Path $RimWorldDir ("Mods\" + $modName)
 
 # Whitelist of things the game actually reads. Defs/Patches/Textures/Languages live at the mod root,
 # so they MUST be listed here (the WorldTechLevelPatch template did not need them).
-$include = @("About", "Defs", "Patches", "Textures", "Languages", "1.7", "LoadFolders.xml", "README.md")
+# Sounds/ is where SoundDef clipPath resolves from (GenFilePaths.ContentPath<AudioClip>() = Sounds/);
+# forgetting it makes the game log "Grain couldn't resolve: Clip not found at ..." at runtime.
+$include = @("About", "Defs", "Patches", "Textures", "Languages", "Sounds", "1.7", "LoadFolders.xml", "README.md")
 
 if ($DryRun) {
     Write-Host "[dry-run] mod root : $modRoot"

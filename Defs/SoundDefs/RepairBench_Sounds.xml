@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- 修补循环音。clip 是本 mod 自己合成的「金属锉磨」循环（纯 Python 合成，1.95s，
+       44.1kHz/16bit 单声道），不引用原版 Assets.zip 里的任何 clip。 -->
+  <SoundDef>
+    <defName>RepairBench_RepairSustain</defName>
+    <sustain>True</sustain>
+    <context>MapOnly</context>
+    <maxVoices>2</maxVoices>
+    <maxSimultaneous>1</maxSimultaneous>
+    <priorityMode>PrioritizeNearest</priorityMode>
+    <sustainFadeoutTime>0.25</sustainFadeoutTime>
+    <subSounds>
+      <li>
+        <muteWhenPaused>True</muteWhenPaused>
+        <grains>
+          <li Class="AudioGrain_Clip">
+            <clipPath>RepairBench/RepairLoop</clipPath>
+          </li>
+        </grains>
+        <volumeRange>46~58</volumeRange>
+        <pitchRange>0.94~1.06</pitchRange>
+        <sustainLoopDurationRange>1.35~1.9</sustainLoopDurationRange>
+        <sustainIntervalRange>0~0.06</sustainIntervalRange>
+        <sustainAttack>0.10</sustainAttack>
+        <sustainRelease>0.30</sustainRelease>
+      </li>
+    </subSounds>
+  </SoundDef>
+
+  <!-- 修好瞬间的收尾音：一声金属扣合 + 余响，同样是本 mod 合成的。 -->
+  <SoundDef>
+    <defName>RepairBench_RepairDone</defName>
+    <context>MapOnly</context>
+    <maxVoices>3</maxVoices>
+    <maxSimultaneous>1</maxSimultaneous>
+    <priorityMode>PrioritizeNewest</priorityMode>
+    <subSounds>
+      <li>
+        <grains>
+          <li Class="AudioGrain_Clip">
+            <clipPath>RepairBench/RepairDone</clipPath>
+          </li>
+        </grains>
+        <volumeRange>62~72</volumeRange>
+        <pitchRange>0.96~1.04</pitchRange>
+      </li>
+    </subSounds>
+  </SoundDef>
+
+</Defs>

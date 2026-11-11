@@ -14,5 +14,9 @@ namespace RepairBench
         public static WorkTypeDef RepairBench_Repairing;
         public static WorkGiverDef RepairBench_RepairDesignated;
         public static JobDef RepairBench_RepairItem;
+
+        // 自定义修补特效与收尾音（Defs/Effects/RepairBench_Effecters.xml、Defs/SoundDefs/RepairBench_Sounds.xml）
+        public static EffecterDef RepairBench_RepairEffect;
+        public static SoundDef RepairBench_RepairDone;
     }
 }
