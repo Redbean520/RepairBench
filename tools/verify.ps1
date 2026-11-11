@@ -877,7 +877,7 @@ try {
     if ($yBad.Count -gt 0) { Fail "C-Yayo" (" | " + ($yBad -join " | ")) } else { Pass "C-Yayo" }
 } catch { Fail "C-Yayo" $_.Exception.Message }
 
-# ---------------------------------------------------------------- C-Recipe: bench is stuffable + fixed 15 steel, kit needs any textile
+# ---------------------------------------------------------------- C-Recipe: bench is stuffable + colorable + fixed 15 steel, kit needs any textile/leather
 try {
     $rBad = New-Object System.Collections.Generic.List[string]
     $benchNode = Get-DefNode "Defs\ThingDefs_Buildings\RepairBench_Bench.xml" "RepairBench_Bench"
@@ -892,6 +892,14 @@ try {
         $steelCost = Select-Text $benchNode "costList/Steel"
         if ($steelCost -ne "15") { $rBad.Add("bench fixed costList/Steel is '$steelCost', expected 15") }
         if ($benchNode.SelectSingleNode("costList/Cloth")) { $rBad.Add("bench still costs Cloth; the fixed part must be 15 steel only") }
+        # Material colouring: Graphic_Multi has GetColoredVersion(), so stuff colour is applied by the engine.
+        $gc = Select-Text $benchNode "graphicData/graphicClass"
+        if ($gc -ne "Graphic_Multi") { $rBad.Add("bench graphicClass is '$gc', expected Graphic_Multi (its GetColoredVersion makes the stuff colour work)") }
+        if ($benchNode.SelectSingleNode("graphicData/ignoreThingDrawColor")) { $rBad.Add("bench sets graphicData/ignoreThingDrawColor; the stuff colour would be ignored") }
+        $defaultStuff = Select-Text $benchNode "defaultStuff"
+        if ($defaultStuff -ne "Steel") { $rBad.Add("bench defaultStuff is '$defaultStuff', expected Steel (old benches without a material are migrated to steel on load)") }
+        $paintable = Select-Text $benchNode "building/paintable"
+        if ($paintable -ne "true") { $rBad.Add("bench building/paintable is '$paintable', expected true (the paint designator must accept it)") }
     }
     $recNode = Get-DefNode "Defs\RecipeDefs\RepairBench_MakeRepairKit.xml" "RepairBench_MakeRepairKit"
     if ($null -eq $recNode) { $rBad.Add("RepairBench_MakeRepairKit not found") }
@@ -900,8 +908,13 @@ try {
         if ($steelCount -ne "10") { $rBad.Add("kit recipe steel count is '$steelCount', expected 10") }
         $textileCount = Select-Text $recNode "ingredients/li[filter/categories/li='Textiles']/count"
         if ($textileCount -ne "5") { $rBad.Add("kit recipe textile count is '$textileCount', expected 5") }
+        $leatherCount = Select-Text $recNode "ingredients/li[filter/categories/li='Leathers']/count"
+        if ($leatherCount -ne "5") { $rBad.Add("kit recipe leather count is '$leatherCount', expected 5 (leathers must be accepted like textiles)") }
         if (-not $recNode.SelectSingleNode("fixedIngredientFilter/categories/li[.='Textiles']")) {
             $rBad.Add("kit fixedIngredientFilter lacks the Textiles category (bill filter would not allow other fabrics)")
+        }
+        if (-not $recNode.SelectSingleNode("fixedIngredientFilter/categories/li[.='Leathers']")) {
+            $rBad.Add("kit fixedIngredientFilter lacks the Leathers category (bill filter would not allow leather)")
         }
         $product = Select-Text $recNode "products/RepairBench_RepairKit"
         if ($product -ne "5") { $rBad.Add("kit recipe product count is '$product', expected 5") }

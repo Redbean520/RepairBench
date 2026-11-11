@@ -30,6 +30,9 @@
 | 23 | **右键强制维修（修补台）**：先给 2～3 件装备挂修补标记 → 选中一个小人 → 右键点修补台 | 菜单列出全图每件带标记装备的「强制维修：<装备名>」；点其中一条，小人立刻去修那件，且优先用你点的这座台。若这座台修补剂不够，该条变灰并提示没有可用修补台（不会偷偷换去别的台） | 截图（右键台子的菜单 + 出发画面）；Player.log 搜 `Exception` |
 | 24 | **音量对比**：让小人修一件装备，把镜头放在修补台旁；再让另一个小人去旁边原版锻造台/缝纫台干活，交替听 | 两边的**工作循环音音量在同一档**（修补台不更响），离开 10 格外都基本听不见；修好时那声扣合音只是略突出一点，不炸耳朵 | 录屏 10 秒（两个台子都响的时候）；若还是偏响/偏轻，说方向（改 `Defs/SoundDefs/RepairBench_Sounds.xml` 的 volumeRange） |
 | 25 | **装了 Yayo 就用 Yayo 的动作**：保持 Yayo 启用（它在你 activeMods 里）→ 让小人修一件装备，同时让另一个小人去旁边原版锻造台做东西 | 修补的小人做的是 **Yayo 的动作**（程序化前后俯仰/抬手，和旁边在锻造台干活的小人同款），**不是**本 mod 的 ±7.5° 锉磨晃动；不叠加、不抽搐；修完/打断后立刻恢复正常站姿。启动日志里应有一条 `[Repair Bench] Yayo's Animation detected`。Player.log 里**不应**出现与 yayo 或 Animation 相关的 Exception | 录屏 5～10 秒（两个小人同框）；Player.log 搜 `Repair Bench` / Exception / yayo。另可临时禁用 Yayo 再修一次，确认退化成本 mod 的 ±7.5° 晃动（说明自动回退也在工作） |
+| 26 | **皮革也能做修补剂**：在锻造台打开「制作修补剂」配方，把装料清单里的织物换成**皮革**（如轻薄皮革 / 毛皮），做一批 | 皮革能被接受为第二项材料（5 个），产出 5 个修补剂；配方描述/提示显示「任意织物或皮革」；中文界面下同一处也是中文 | 截图（配方装料面板选了皮革 + 成品）；若皮革选项根本不出现，说明 `Leathers` 分类没生效，请贴 `Defs/RecipeDefs/RepairBench_MakeRepairKit.xml` 与截图 |
+| 27 | **材料染色**：用**木材**造一座修补台、用**钢铁**再造一座（建造时选材料），并排看；再对其中一座用原版「涂漆」涂个颜色 | 木台是**棕色**、钢台是**深灰**（不是两座都白），一眼能看出材质；涂过漆的那座显示漆色（漆色优先于材料色）；放地上、转四个朝向颜色都一致 | 截图（两座并排 + 涂漆后）；若仍是白色，先确认建造时是否真的选了材料（旧存档的台子没有材料数据） |
+| 28 | **旧存档旧台**：进 11/10 之前建的、已有修补台的老存档 | 老台子读档后自动补成**钢铁**色（原版会打一条 "is made from stuff but has no stuff set" 的日志，属预期，不是本 mod 的 bug）；修补台功能一切正常（装料、修理、Alert） | Player.log 搜 `made from stuff` / `RepairBench`；贴台子截图 |
 
 补充：
 - 第 3 条若消耗修补剂数量与「缺失耐久 × 10」不符，请记录：修前 HP/最大 HP、台上修补剂前后数量。
@@ -45,4 +48,7 @@
 - 第 20 条与「别的台有工作动画」的解释：**原版没有任何工作动画**（`Toils_Recipe.DoRecipeWork` 只有特效/音效/进度条），你看到的动作来自 **Yayo's Animation**——它按 `CurJob.def.defName` 的硬编码白名单扭小人。所以本 mod 分两种模式：装了 Yayo 时用 Harmony prefix 把我们的 JobDef 改写成名单里的 `Repair`，直接复用它的动作（第 25 条）；没装 Yayo 时用 1.7 原生 AnimationDef 自己动（只转 Root 节点，帽子和衣服跟着一起动，不会错位）。
 - 第 22/23 条：原版「优先执行工作」那个右键选项已被 `<directOrderable>false</directOrderable>` 关掉（它会拼出英文式 verb 文案），统一由本 mod 出「强制维修」，中英文一致。
 - 第 25 条的源码依据：Yayo 的程序化动画每帧先查 `PawnRenderer.HasAnimation`（Yayo 源码 `AnimationCore.cs:37`），发现小人有 AnimationDef 动画就把自己那一帧的数据整体 `Reset()` 让位——所以「我们挂动画」和「用 Yayo 动画」只能二选一。现在的做法（`Source/RepairBench/RepairBenchYayoCompat.cs`）：启动时反射找 `YayoAnimation.AnimationCore` 与 `HarmonyLib.Harmony`，给 `AniStanding` 挂 prefix 把 `RepairBench_RepairItem` 改写成 `Repair`；桥接成功（`UseOwnAnimation == false`）就不挂我们的 AnimationDef。全反射、无硬依赖，任何一步失败只打 Warning 并回退本 mod 动画。verify 的 `C-JobFx`（`HasAnimation`/`ownsWorkAnimation`）与新增 `C-Yayo` 契约都做了断言防回归。
+- 第 26 条：1.7 的 `Leathers` 其实**挂在 `Textiles` 分类下面**（`ThingCategories.xml` 里 `<parent>Textiles</parent>`），所以原先的 `Textiles` 理论上已经包含皮革。为了让「要皮革」这件事明确且可断言，配方与装料过滤里现在**显式**列了 `Leathers`（verify 的 `C-Recipe` 断言两处 `count` 都是 5）。
+- 第 27 条的原理：修补台的贴图是 `Graphic_Multi`，它有 `GetColoredVersion()`，游戏把 `Stuff.stuffProps.color` 乘到材质上（钢铁 105,105,105 / 木材 133,97,67 / 塑钢 160,178,181），所以可选材料的建筑天然按材料上色；`building.paintable = true` 又让它吃原版涂漆（`Building.DrawColor` 里漆色优先）。verify 的 `C-Recipe` 断言了 `Graphic_Multi`、无 `ignoreThingDrawColor`、`paintable = true`、`defaultStuff = Steel`。
+- 第 28 条：1.7 的 `Thing.ExposeData` 读档时若 `def.MadeFromStuff && Stuff == null` 会自动 `SetStuffDirect(GenStuff.DefaultStuffFor(def))`；我们给台子设了 `<defaultStuff>Steel</defaultStuff>`，所以旧台会被补成钢铁（不设的话会按 WoodLog → Steel 的顺序补成**木材**）。补材料时会打一条 Log.Error「is made from stuff but has no stuff set」，是原版行为、只出现一次。
 - 已知 v1 限制（不算 bug）：穿戴中装备不能标记、修完不自动归仓、不能修建筑、修补剂图标单张。

@@ -35,7 +35,11 @@
     <castEdgeShadows>true</castEdgeShadows>
     <staticSunShadowHeight>0.20</staticSunShadowHeight>
     <!-- 台体可以用任意金属/木材制作（原版工作台同款 two stuff categories），
-         但固定还要 15 钢铁（台钳、丝杠这些承力件）。总造价与原来的 75 钢 + 15 布相当。 -->
+         但固定还要 15 钢铁（台钳、丝杠这些承力件）。总造价与原来的 75 钢 + 15 布相当。
+         台体贴图是 Graphic_Multi，1.7 的 Graphic_Multi 自带 GetColoredVersion()，
+         所以建造时选什么材料，台面就按 stuffProps.color 染色（钢=灰、木=棕、塑钢=青灰…），
+         和原版其它可染色建筑完全同一套机制；再叠一层「涂漆」也支持（见 building/paintable）。 -->
+    <defaultStuff>Steel</defaultStuff>
     <costStuffCount>75</costStuffCount>
     <stuffCategories>
       <li>Metallic</li>

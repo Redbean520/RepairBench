@@ -4,7 +4,7 @@
   <RecipeDef>
     <defName>RepairBench_MakeRepairKit</defName>
     <label>make repair kit</label>
-    <description>Assemble repair kits from steel and any textile.</description>
+    <description>Assemble repair kits from steel and any textile or leather.</description>
     <jobString>Making repair kit.</jobString>
     <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
     <effectWorking>Cook</effectWorking>
@@ -20,10 +20,13 @@
         <count>10</count>
       </li>
       <li>
-        <!-- 任意织物：原版 ThingCategoryDef "Textiles"（布、合纤、魔鬼菌丝、超织物、各类毛料…）。 -->
+        <!-- 任意织物或皮革：原版 ThingCategoryDef "Textiles"（布、合纤、魔鬼菌丝、超织物、各类毛料…）
+             与 "Leathers"（各类皮革）。两个都显式列出——Leathers 虽然挂在 Textiles 下面，
+             这里写全是为了意图清楚，也防止以后换分类时静默失效。 -->
         <filter>
           <categories>
             <li>Textiles</li>
+            <li>Leathers</li>
           </categories>
         </filter>
         <count>5</count>
@@ -35,6 +38,7 @@
       </thingDefs>
       <categories>
         <li>Textiles</li>
+        <li>Leathers</li>
       </categories>
     </fixedIngredientFilter>
     <products>
