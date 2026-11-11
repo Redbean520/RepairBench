@@ -139,14 +139,21 @@ namespace RepairBench
         /**
          * 开始干活时给小人挂上晃动动画（Defs/AnimationDefs/RepairBench_Animation.xml）。
          *
-         * 兼容性：如果进场时小人身上已经有别人的动画（其它动画 mod 或 Anomaly 变异体已经 SetAnimation），
-         * 本 mod 不抢——直接让对方的动画播完。Yayo's Animation 这类“程序化画小人”的 mod 反过来会检查
-         * PawnRenderer.HasAnimation（Yayo 源码 AnimationCore.cs:37），发现我们挂了 AnimationDef 就把自己那一帧
-         * 的数据整体 Reset 让位，所以两套机制不会叠成抽风，也不需要 Harmony 去打对方。
+         * 优先交给 Yayo's Animation：装 Yayo 且运行时桥接成功时（见 RepairBenchYayoCompat），
+         * 修补动作由 Yayo 自己的动画系统负责，这里直接不挂我们的 AnimationDef——否则 Yayo 会检查到
+         * PawnRenderer.HasAnimation（Yayo 源码 AnimationCore.cs:37）而让位，结果两边都不动。
+         *
+         * 没装 Yayo（或桥接失败）时才用本 mod 的 AnimationDef。另外如果进场时小人身上已经有别人的
+         * 动画（其它动画 mod 或 Anomaly 变异体已经 SetAnimation），本 mod 也不抢，收工只清自己挂的那一个。
          */
         private void StartWorkAnimation()
         {
             ownsWorkAnimation = false;
+            if (!RepairBenchYayoCompat.UseOwnAnimation)
+            {
+                // 交给 Yayo：它会把 RepairBench_RepairItem 当作原版 "Repair" 来播动作。
+                return;
+            }
             if (pawn == null || !pawn.Spawned || pawn.Drawer == null || pawn.Drawer.renderer == null)
             {
                 return;

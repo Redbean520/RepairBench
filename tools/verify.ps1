@@ -849,6 +849,31 @@ try {
     if ($fBad.Count -gt 0) { Fail "C-Force" (" | " + ($fBad -join " | ")) } else { Pass "C-Force" }
 } catch { Fail "C-Force" $_.Exception.Message }
 
+# ---------------------------------------------------------------- C-Yayo: defer the work animation to Yayo's Animation when installed
+try {
+    $yBad = New-Object System.Collections.Generic.List[string]
+    $compatPath = Join-Path $modRoot "Source\RepairBench\RepairBenchYayoCompat.cs"
+    $ctext = ""
+    if (-not (Test-Path -LiteralPath $compatPath)) { $yBad.Add("RepairBenchYayoCompat.cs missing") }
+    else { $ctext = [System.IO.File]::ReadAllText($compatPath) }
+    foreach ($needle in @("YayoAnimation.AnimationCore", "AniStanding", "HarmonyLib.Harmony", "HarmonyLib.HarmonyMethod", "UseOwnAnimation", "ref string defName", "StaticConstructorOnStartup")) {
+        if ($ctext -notmatch [regex]::Escape($needle)) { $yBad.Add("compat source lacks " + $needle) }
+    }
+    foreach ($needle in @("SetAnimation(", "CurAnimation")) {
+        if ($ctext -match [regex]::Escape($needle)) { $yBad.Add("compat source must only rewrite Yayo's argument, not call " + $needle) }
+    }
+    $jdPath = Join-Path $modRoot "Source\RepairBench\JobDriver_RepairItem.cs"
+    if (-not (Test-Path -LiteralPath $jdPath)) { $yBad.Add("JobDriver_RepairItem.cs missing") }
+    elseif (([System.IO.File]::ReadAllText($jdPath)) -notmatch "RepairBenchYayoCompat\.UseOwnAnimation") {
+        $yBad.Add("JobDriver does not consult RepairBenchYayoCompat.UseOwnAnimation (would fight Yayo's HasAnimation yield)")
+    }
+    $readmePath = Join-Path $modRoot "README.md"
+    if (Test-Path -LiteralPath $readmePath) {
+        if (([System.IO.File]::ReadAllText($readmePath)) -notmatch "Yayo") { $yBad.Add("README does not document the Yayo's Animation behaviour") }
+    } else { $yBad.Add("README.md missing") }
+    if ($yBad.Count -gt 0) { Fail "C-Yayo" (" | " + ($yBad -join " | ")) } else { Pass "C-Yayo" }
+} catch { Fail "C-Yayo" $_.Exception.Message }
+
 # ---------------------------------------------------------------- summary
 Write-Host ""
 if ($script:failures -gt 0) {

@@ -58,15 +58,17 @@ RimWorld 1.7 mod —— 用命令标记把磨损的武器 / 衣物 / 护甲送�
 - 只做 XML Def + 1 个补丁（往原版「命令」分类追加设计器）+ 独立 DLL，不改原版 Def 数值。
 - 与「修理建筑」的原版系统、各类工作类型 mod 不冲突；新增工作类型「修补」默认激活，可在工作优先级里调整。
 - 建筑按原版工作台谱系派生（`BenchBase`），放置预览的工作格显示原版座椅图形；不挂账单页、不耗电。
-- 与 **Yayo's Animation** 共存（已对过它的源码，不需要 Harmony、不挑加载顺序）：
+- 与 **Yayo's Animation** 自动分工：**装了 Yayo 就用 Yayo 的动作，没装才用本 mod 的**（玩家不用做任何设置）：
   原版本身没有「工作动画」（工作台工作是站着放持续特效），大家看到的小人动作来自 Yayo 这类 mod。
-  - Yayo 的程序化动画每帧先检查 `PawnRenderer.HasAnimation`（Yayo 源码 `AnimationCore.cs:37`：
-    `if (!pawn.Spawned || pawn.Dead || pawn.Drawer.renderer.HasAnimation) { pdd.Reset(); return; }`），
-    发现本 mod 给小人挂了 AnimationDef 就整体让位，不会两套动作叠成抽风；
-  - Yayo 只对自己硬编码的一批 JobDef 名做动画（`DoBill` / `Repair` / `Refuel` / `RefuelAtomic` / `Reload` / `RepairMech` …），
-    本 mod 的 `RepairBench_RepairItem` 不在名单里，所以修补时由本 mod 自带的 Root 角度动画自己动；
-  - 本 mod 也做了对称处理：开工时如果小人已经有别人的动画就不覆盖，收工只清自己挂的那一个（不会把 Yayo / Anomaly 的动画清掉）。
-  - 结论：装 Yayo 时它在别的活上照常动，修补这一活由本 mod 接管；不装 Yayo 时修补照样有动画。
+  - 装了 Yayo：本 mod 在启动时用反射给 Yayo 的 `AnimationCore.AniStanding` 挂一个 Harmony prefix，
+    把 `RepairBench_RepairItem` 改写成 Yayo 名单里的 `Repair`（原版修理），于是修补时小人用的是
+    Yayo 给原版修理/制作的那套程序化动作，和旁边在锻造台干活的小人同款；
+  - 本 mod 自己不再挂 AnimationDef——因为 Yayo 每帧先查 `PawnRenderer.HasAnimation`
+    （Yayo 源码 `AnimationCore.cs:37`），发现小人有 AnimationDef 动画就会让位，结果两边都不动；
+  - 没装 Yayo，或 Yayo 改了签名导致桥接失败：自动回退到本 mod 自带的 AnimationDef（Root 节点 ±7.5° 锉磨晃动），
+    并在日志里留一条 Warning；
+  - 纯反射实现：不引用 Yayo / Harmony 程序集、不写 `modDependencies`，没装 Yayo 时连 Harmony 都不碰；
+  - 如果小人身上已经有别人的动画（Anomaly 变异体等），本 mod 的兜底动画不覆盖；收工只清自己挂的那一个。
 - 存档：新增自定义 MapComponent 记录修理进度；**中途移除本 mod 未验证**（建议先修完再移除）。
 
 ## 安装
@@ -79,7 +81,7 @@ RimWorld 1.7 mod —— 用命令标记把磨损的武器 / 衣物 / 护甲送�
 # 编译（注意：需要 .NET 10 SDK，系统只装了 9 时用用户目录的 dotnet）
 & "$env:USERPROFILE\.dotnet\dotnet.exe" build .\Source\RepairBench\RepairBench.csproj -c Release
 
-# 静态自检（23 项契约：Def 字段、命名、语言、贴图/音频路径、特效引用、工作动画、装备命令栏按钮、右键强制维修、音量上限、DLL 元数据、部署白名单等）
+# 静态自检（24 项契约：Def 字段、命名、语言、贴图/音频路径、特效引用、工作动画、Yayo 桥接、装备命令栏按钮、右键强制维修、音量上限、DLL 元数据、部署白名单等）
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify.ps1 -Strict
 
 # 部署到游戏目录（会先结束正在运行的 RimWorld）

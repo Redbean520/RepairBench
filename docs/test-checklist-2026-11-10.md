@@ -29,7 +29,7 @@
 | 22 | **右键强制维修（装备）**：选中一个小人 → 右键点地上约 50% 耐久的武器 → 选「强制维修」 | 小人**立刻**（不等工作队列扫描）去搬这件装备、上修补台修满；菜单项悬停显示需要几个修补剂。右键同一件已标记的装备，额外有「取消维修」一项；物品被别人占用 / 没有可用修补台时「强制维修」变灰并说明原因。**不应**再出现第二条原版风格的「优先执行维修」英文式选项 | 截图（右键菜单 + tooltip + 小人出发）；Player.log 搜 `Exception` / `TryTakeOrderedJob` |
 | 23 | **右键强制维修（修补台）**：先给 2～3 件装备挂修补标记 → 选中一个小人 → 右键点修补台 | 菜单列出全图每件带标记装备的「强制维修：<装备名>」；点其中一条，小人立刻去修那件，且优先用你点的这座台。若这座台修补剂不够，该条变灰并提示没有可用修补台（不会偷偷换去别的台） | 截图（右键台子的菜单 + 出发画面）；Player.log 搜 `Exception` |
 | 24 | **音量对比**：让小人修一件装备，把镜头放在修补台旁；再让另一个小人去旁边原版锻造台/缝纫台干活，交替听 | 两边的**工作循环音音量在同一档**（修补台不更响），离开 10 格外都基本听不见；修好时那声扣合音只是略突出一点，不炸耳朵 | 录屏 10 秒（两个台子都响的时候）；若还是偏响/偏轻，说方向（改 `Defs/SoundDefs/RepairBench_Sounds.xml` 的 volumeRange） |
-| 25 | **与 Yayo's Animation 共存**：保持 Yayo 启用（本次日志里它在你 activeMods 里）→ 让小人修一件装备，同时让另一个小人去旁边原版锻造台做东西 | 修补时小人做本 mod 的 ±7.5° 锉磨晃动，**不叠加**成前后大幅移动/抽搐；另一个小人在原版台上照常有 Yayo 的动作；修完/打断后小人立刻恢复正常站姿。Player.log 里**不应**出现与 yayo 或 Animation 相关的 Exception | 录屏 5～10 秒（两个小人同框）；Player.log 搜 Exception / yayo |
+| 25 | **装了 Yayo 就用 Yayo 的动作**：保持 Yayo 启用（它在你 activeMods 里）→ 让小人修一件装备，同时让另一个小人去旁边原版锻造台做东西 | 修补的小人做的是 **Yayo 的动作**（程序化前后俯仰/抬手，和旁边在锻造台干活的小人同款），**不是**本 mod 的 ±7.5° 锉磨晃动；不叠加、不抽搐；修完/打断后立刻恢复正常站姿。启动日志里应有一条 `[Repair Bench] Yayo's Animation detected`。Player.log 里**不应**出现与 yayo 或 Animation 相关的 Exception | 录屏 5～10 秒（两个小人同框）；Player.log 搜 `Repair Bench` / Exception / yayo。另可临时禁用 Yayo 再修一次，确认退化成本 mod 的 ±7.5° 晃动（说明自动回退也在工作） |
 
 补充：
 - 第 3 条若消耗修补剂数量与「缺失耐久 × 10」不符，请记录：修前 HP/最大 HP、台上修补剂前后数量。
@@ -42,7 +42,7 @@
 - 第 15 条的音效与粒子是本 mod 自己合成的（`Sounds/RepairBench/RepairLoop.wav`、`RepairDone.wav`，金属屑 16×16 ×3）；觉得太响/太轻、屑片太大/太小，告诉我方向（不是 bug，直接调参数）。
 - 第 18 条对应的红字根因：台的 graphicData 里同时写了 shadowData 与 staticSunShadowHeight，1.7 认为两者冲突；已删 shadowData（原版缝纫台也没写）。
 - 第 24 条的音量根因：原来把循环音写成 `volumeRange 46~58`、收尾音 62~72，而原版工作音是 10~12（`Recipe_Smith` 12、`Recipe_Tailor` 10），等于响了 4～5 倍；现已改成循环音 10~12、收尾音 14~18，并补上原版同款 `distRange 10~50`。verify 里加了 `C-SoundVol` 契约（最大音量 > 20 直接 FAIL）防回归。
-- 第 20 条与「别的台有工作动画」的解释：**原版没有任何工作动画**（`Toils_Recipe.DoRecipeWork` 只有特效/音效/进度条），你看到的动作来自 **Yayo's Animation**——它按 `CurJob.def.defName` 的硬编码白名单扭小人，我们的 JobDef 不在名单里，而且它检测到小人有 AnimationDef 动画就会让位。所以本 mod 用 1.7 原生 AnimationDef 自己动（只转 Root 节点，帽子和衣服跟着一起动，不会错位）。
+- 第 20 条与「别的台有工作动画」的解释：**原版没有任何工作动画**（`Toils_Recipe.DoRecipeWork` 只有特效/音效/进度条），你看到的动作来自 **Yayo's Animation**——它按 `CurJob.def.defName` 的硬编码白名单扭小人。所以本 mod 分两种模式：装了 Yayo 时用 Harmony prefix 把我们的 JobDef 改写成名单里的 `Repair`，直接复用它的动作（第 25 条）；没装 Yayo 时用 1.7 原生 AnimationDef 自己动（只转 Root 节点，帽子和衣服跟着一起动，不会错位）。
 - 第 22/23 条：原版「优先执行工作」那个右键选项已被 `<directOrderable>false</directOrderable>` 关掉（它会拼出英文式 verb 文案），统一由本 mod 出「强制维修」，中英文一致。
-- 第 25 条的源码依据：Yayo 的程序化动画每帧先查 `PawnRenderer.HasAnimation`（Yayo 源码 `AnimationCore.cs:37`），发现本 mod 给小人挂了 AnimationDef 就把自己那一帧的数据整体 `Reset()` 让位；本 mod 也做了对称处理——开工时若小人已有别人的动画就不覆盖，收工只清 `ownsWorkAnimation` 标记过的那一个（不会把 Yayo / Anomaly 的动画清掉）。verify 的 `C-JobFx` 已加 `HasAnimation` 与 `ownsWorkAnimation` 两条断言防回归，所以两边不需要 Harmony、也不挑加载顺序。
+- 第 25 条的源码依据：Yayo 的程序化动画每帧先查 `PawnRenderer.HasAnimation`（Yayo 源码 `AnimationCore.cs:37`），发现小人有 AnimationDef 动画就把自己那一帧的数据整体 `Reset()` 让位——所以「我们挂动画」和「用 Yayo 动画」只能二选一。现在的做法（`Source/RepairBench/RepairBenchYayoCompat.cs`）：启动时反射找 `YayoAnimation.AnimationCore` 与 `HarmonyLib.Harmony`，给 `AniStanding` 挂 prefix 把 `RepairBench_RepairItem` 改写成 `Repair`；桥接成功（`UseOwnAnimation == false`）就不挂我们的 AnimationDef。全反射、无硬依赖，任何一步失败只打 Warning 并回退本 mod 动画。verify 的 `C-JobFx`（`HasAnimation`/`ownsWorkAnimation`）与新增 `C-Yayo` 契约都做了断言防回归。
 - 已知 v1 限制（不算 bug）：穿戴中装备不能标记、修完不自动归仓、不能修建筑、修补剂图标单张。
