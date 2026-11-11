@@ -19,8 +19,12 @@
             <clipPath>RepairBench/RepairLoop</clipPath>
           </li>
         </grains>
-        <volumeRange>46~58</volumeRange>
+        <!-- 原版工作音（SoundDefs/Interact_Sustainers_Work.xml）的 volumeRange 是 10~12：
+             Recipe_Smith 12、Recipe_Tailor 10、Recipe_Machining 10、Recipe_Sculpt 10。
+             之前写 46~58 比原版响 4~5 倍，维护者听感就是“太大了”。 -->
+        <volumeRange>10~12</volumeRange>
         <pitchRange>0.94~1.06</pitchRange>
+        <distRange>10~50</distRange>
         <sustainLoopDurationRange>1.35~1.9</sustainLoopDurationRange>
         <sustainIntervalRange>0~0.06</sustainIntervalRange>
         <sustainAttack>0.10</sustainAttack>
@@ -43,8 +47,10 @@
             <clipPath>RepairBench/RepairDone</clipPath>
           </li>
         </grains>
-        <volumeRange>62~72</volumeRange>
+        <!-- 原版一次性收尾音（Finish_Wood 12、Sculpt_Stop 10.71）在 10~20，这里取中上。 -->
+        <volumeRange>14~18</volumeRange>
         <pitchRange>0.96~1.04</pitchRange>
+        <distRange>10~50</distRange>
       </li>
     </subSounds>
   </SoundDef>

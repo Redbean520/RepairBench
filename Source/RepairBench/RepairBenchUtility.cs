@@ -131,6 +131,65 @@ namespace RepairBench
                 b => CanUseBench(b, kits) && !b.IsForbidden(pawn) && pawn.CanReach(b, PathEndMode.InteractionCell, Danger.Deadly));
         }
 
+        /// <summary>
+        /// Builds the haul-to-bench-and-repair job for one item, or returns null and reports why.
+        /// Shared by the work giver (automatic scanning) and by the right-click "force repair"
+        /// options, so both use exactly the same rules for designation, reservations, repair kits
+        /// and bench choice. preferredBench is the bench the player right-clicked, if any.
+        /// </summary>
+        public static Job TryMakeRepairJob(Pawn pawn, Thing item, Thing preferredBench, bool requireDesignation, bool forced, out string failReason)
+        {
+            failReason = null;
+            if (pawn == null || pawn.Map == null || !IsValidItem(item) || item.Map != pawn.Map)
+            {
+                return null;
+            }
+            if (requireDesignation &&
+                pawn.Map.designationManager.DesignationOn(item, RepairBenchDefOf.RepairBench_RepairDesignation) == null)
+            {
+                return null;
+            }
+            if (!pawn.CanReserve(item, 1, -1, null, forced))
+            {
+                return null;
+            }
+            RepairBenchExtension ext = Extension;
+            if (ext == null)
+            {
+                return null;
+            }
+            int kits = KitsFor(item, ext);
+            Thing bench;
+            if (preferredBench != null)
+            {
+                if (!preferredBench.Spawned || !CanUseBench(preferredBench, kits) ||
+                    preferredBench.IsForbidden(pawn) ||
+                    !pawn.CanReach(preferredBench, PathEndMode.InteractionCell, Danger.Deadly))
+                {
+                    failReason = "RepairBench_NoUsableBench".Translate();
+                    return null;
+                }
+                bench = preferredBench;
+            }
+            else
+            {
+                bench = FindUsableBench(pawn, kits);
+                if (bench == null)
+                {
+                    failReason = "RepairBench_NoUsableBench".Translate();
+                    return null;
+                }
+            }
+            if (!pawn.CanReserve(bench, 1, -1, null, forced))
+            {
+                failReason = "RepairBench_NoUsableBench".Translate();
+                return null;
+            }
+            Job job = JobMaker.MakeJob(RepairBenchDefOf.RepairBench_RepairItem, item, bench);
+            job.count = kits;
+            return job;
+        }
+
         public static Thing FindUsableBench(Map map, int kits, bool requirePawnChecks, Pawn pawn = null)
         {
             if (map == null)

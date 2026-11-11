@@ -35,39 +35,11 @@ namespace RepairBench
 
         public override Job JobOnThing(Pawn pawn, Thing t, bool forced = false)
         {
-            if (!RepairBenchUtility.IsValidItem(t))
+            Job job = RepairBenchUtility.TryMakeRepairJob(pawn, t, null, true, forced, out string failReason);
+            if (job == null && forced && failReason != null)
             {
-                return null;
+                JobFailReason.Is(failReason);
             }
-            if (pawn.Map.designationManager.DesignationOn(t, RepairBenchDefOf.RepairBench_RepairDesignation) == null)
-            {
-                return null;
-            }
-            if (!pawn.CanReserve(t, 1, -1, null, forced))
-            {
-                return null;
-            }
-            RepairBenchExtension ext = RepairBenchUtility.Extension;
-            if (ext == null)
-            {
-                return null;
-            }
-            int kits = RepairBenchUtility.KitsFor(t, ext);
-            Thing bench = RepairBenchUtility.FindUsableBench(pawn, kits);
-            if (bench == null)
-            {
-                if (forced)
-                {
-                    JobFailReason.Is("RepairBench_NoUsableBench".Translate());
-                }
-                return null;
-            }
-            if (!pawn.CanReserve(bench, 1, -1, null, forced))
-            {
-                return null;
-            }
-            Job job = JobMaker.MakeJob(RepairBenchDefOf.RepairBench_RepairItem, t, bench);
-            job.count = kits;
             return job;
         }
     }

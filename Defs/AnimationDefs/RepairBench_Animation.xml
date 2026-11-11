@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
 
-  <!-- 1.7 原版工作台其实没有“工作动画”：小人就是站着（Toils_Recipe.DoRecipeWork 只放特效/音效/进度条）。
-       这里用 1.7 的 AnimationDef 给修补中的小人加一个很小的前后晃动，让它看起来在用力干活。
-       只动 Root 的角度（Anomaly 的 DevourerDigesting 就是这么用的），不位移、不改贴图，
-       durationTicks 内走完一个完整循环并循环播放；Job 结束时会 SetAnimation(null) 清掉。
-       想让动作更轻/更重，改 angle 的绝对值即可（单位：度）。 -->
+  <!-- 1.7 原版工作台没有“工作动画”（Toils_Recipe.DoRecipeWork 只放特效/音效/进度条），
+       维护者在别的台看到的动效来自 Yayo's Animation：它按 CurJob.def.defName 硬编码白名单
+       （DoBill / Repair / Refuel ...）来扭小人，且只要小人已有 AnimationDef 动画就会让位
+       （AnimationCore.cs: "if (... pawn.Drawer.renderer.HasAnimation) { pdd.Reset(); return; }"）。
+       我们的 JobDef 不在它的白名单里，所以这里自绘：只动 Root 角度（Root 是 Head/Body/服饰节点的父节点，
+       整体一起动，不会出现衣服不同步），±7.5° 的“压上去—回手”循环，durationTicks 40。
+       Yayo 自己干活时用 ±10° 量级，这里取略小一档。想更明显就加大 angle。 -->
   <AnimationDef>
     <defName>RepairBench_WorkAnimation</defName>
     <durationTicks>40</durationTicks>
@@ -23,16 +25,28 @@
               <angle>0</angle>
             </li>
             <li>
-              <tick>10</tick>
-              <angle>-2.4</angle>
+              <tick>8</tick>
+              <angle>7.5</angle>
+            </li>
+            <li>
+              <tick>14</tick>
+              <angle>7.5</angle>
             </li>
             <li>
               <tick>20</tick>
+              <angle>5</angle>
+            </li>
+            <li>
+              <tick>26</tick>
+              <angle>2.5</angle>
+            </li>
+            <li>
+              <tick>32</tick>
               <angle>0</angle>
             </li>
             <li>
-              <tick>30</tick>
-              <angle>2.4</angle>
+              <tick>35</tick>
+              <angle>-1.5</angle>
             </li>
             <li>
               <tick>40</tick>

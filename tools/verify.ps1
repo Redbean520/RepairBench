@@ -785,6 +785,66 @@ try {
     if ($gizBad.Count -gt 0) { Fail "C-Gizmo" (" | " + ($gizBad -join " | ")) } else { Pass "C-Gizmo" }
 } catch { Fail "C-Gizmo" $_.Exception.Message }
 
+# ---------------------------------------------------------------- C-SoundVol: custom sounds stay near vanilla loudness
+try {
+    $svBad = New-Object System.Collections.Generic.List[string]
+    $sndPath = Join-Path $modRoot "Defs\SoundDefs\RepairBench_Sounds.xml"
+    if (-not (Test-Path -LiteralPath $sndPath)) { $svBad.Add("Defs\SoundDefs\RepairBench_Sounds.xml missing") }
+    else {
+        $sdoc = LoadXml $sndPath
+        foreach ($sdef in $sdoc.SelectNodes("Defs/SoundDef")) {
+            $sname = Select-Text $sdef "defName"
+            foreach ($li in $sdef.SelectNodes("subSounds/li")) {
+                # SubSoundDef.Volume = volumeRange.RandomInRange / 100f. Vanilla work loops are 10~12
+                # (Recipe_Smith 12, Recipe_Tailor 10) and one-shot finishes 10~20, so anything above 20
+                # is what made the repair loop feel far too loud.
+                $vr = $li.SelectSingleNode("volumeRange")
+                if ($null -eq $vr) { $svBad.Add($sname + " has no volumeRange"); continue }
+                $vmax = 0.0
+                foreach ($piece in $vr.InnerText.Split("~")) {
+                    $v = 0.0
+                    if ([double]::TryParse($piece.Trim(), [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$v)) {
+                        if ($v -gt $vmax) { $vmax = $v }
+                    }
+                }
+                if ($vmax -gt 20) { $svBad.Add($sname + " volumeRange " + $vr.InnerText + " is louder than vanilla work sounds (max 20)") }
+                if ($null -eq $li.SelectSingleNode("distRange")) { $svBad.Add($sname + " has no distRange (vanilla work loops use 10~50)") }
+            }
+        }
+    }
+    if ($svBad.Count -gt 0) { Fail "C-SoundVol" (" | " + ($svBad -join " | ")) } else { Pass "C-SoundVol" }
+} catch { Fail "C-SoundVol" $_.Exception.Message }
+
+# ---------------------------------------------------------------- C-Force: right-click "force repair" on gear and on the bench
+try {
+    $fBad = New-Object System.Collections.Generic.List[string]
+    $wg = Get-DefNode "Defs\WorkGiverDefs\RepairBench_WorkGivers.xml" "RepairBench_RepairDesignated"
+    if ($null -eq $wg) { $fBad.Add("WorkGiverDef RepairBench_RepairDesignated missing") }
+    elseif ((Select-Text $wg "directOrderable") -ne "false") {
+        $fBad.Add("directOrderable must be false, otherwise vanilla adds a second verb-based force-work entry next to ours")
+    }
+    $providerPath = Join-Path $modRoot "Source\RepairBench\FloatMenuOptionProvider_RepairBench.cs"
+    $ptext = ""
+    if (-not (Test-Path -LiteralPath $providerPath)) { $fBad.Add("FloatMenuOptionProvider_RepairBench.cs missing") }
+    else { $ptext = [System.IO.File]::ReadAllText($providerPath) }
+    foreach ($needle in @("TryTakeOrderedJobPrioritizedWork", "RepairBench_RepairDesignation", "RepairBench_Bench", "FloatMenuForceRepair", "FloatMenuForceRepairItem", "CanPawnDoRepairWork", "SpawnedDesignationsOfDef")) {
+        if ($ptext -notmatch [regex]::Escape($needle)) { $fBad.Add("provider source lacks " + $needle) }
+    }
+    $utilPath = Join-Path $modRoot "Source\RepairBench\RepairBenchUtility.cs"
+    if (-not (Test-Path -LiteralPath $utilPath)) { $fBad.Add("RepairBenchUtility.cs missing") }
+    elseif (([System.IO.File]::ReadAllText($utilPath)) -notmatch "TryMakeRepairJob") {
+        $fBad.Add("RepairBenchUtility lacks the shared TryMakeRepairJob used by work giver and force repair")
+    }
+    $enKeysPath = Join-Path $modRoot "Languages\English\Keyed\RepairBench_Keys.xml"
+    if (Test-Path -LiteralPath $enKeysPath) {
+        $ktext = [System.IO.File]::ReadAllText($enKeysPath)
+        foreach ($k in @("FloatMenuForceRepair", "FloatMenuForceRepairItem", "FloatMenuForceRepairDesc", "FloatMenuForceRepairCannot")) {
+            if ($ktext -notmatch ("<" + $k + ">")) { $fBad.Add("English keyed file lacks " + $k) }
+        }
+    } else { $fBad.Add("English keyed file missing") }
+    if ($fBad.Count -gt 0) { Fail "C-Force" (" | " + ($fBad -join " | ")) } else { Pass "C-Force" }
+} catch { Fail "C-Force" $_.Exception.Message }
+
 # ---------------------------------------------------------------- summary
 Write-Host ""
 if ($script:failures -gt 0) {

@@ -11,6 +11,10 @@
       <li>Manipulation</li>
     </requiredCapacities>
     <scanThings>true</scanThings>
+    <!-- 关掉原版 FloatMenuOptionProvider_WorkGivers 的“优先执行工作”选项（它会用
+         WorkGiverDef.verb 拼一条英文式文案），强制维修由 FloatMenuOptionProvider_RepairBench
+         统一出「强制维修」，两种语言都统一、并且带修补剂数量提示。 -->
+    <directOrderable>false</directOrderable>
   </WorkGiverDef>
 
 </Defs>
