@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+
+  <!-- 把所有武器（枪械 / 近战 / 手雷）都挂上“标记维修”comp：
+       BaseWeapon 是原版武器抽象基类，PatchOperationAdd 把 li 追加进它的 comps，
+       继承解析之前生效，所以全部子 Def 都会带上。 -->
+  <Operation Class="PatchOperationAdd">
+    <xpath>Defs/ThingDef[@Name="BaseWeapon"]/comps</xpath>
+    <value>
+      <li Class="RepairBench.CompProperties_RepairMarkable"/>
+    </value>
+  </Operation>
+
+  <!-- 衣物 / 护甲：ApparelNoQualityBase 是所有服装的最顶层抽象基类（ApparelBase、各类护甲都从它派生）。 -->
+  <Operation Class="PatchOperationAdd">
+    <xpath>Defs/ThingDef[@Name="ApparelNoQualityBase"]/comps</xpath>
+    <value>
+      <li Class="RepairBench.CompProperties_RepairMarkable"/>
+    </value>
+  </Operation>
+
+</Patch>

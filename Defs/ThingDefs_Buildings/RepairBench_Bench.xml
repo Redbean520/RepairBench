@@ -11,6 +11,11 @@
     <label>repair bench</label>
     <description>A cluttered workbench of clamps, spare parts and solvent. Damaged gear left here is slowly restored to full condition, consuming repair kits as the work goes on.</description>
     <thingClass>Building</thingClass>
+    <!-- BuildingBase（以及 BenchBase）的默认 drawerType 是 MapMeshOnly，那种建筑永远不跑
+         comp 的 PostDraw；原版“没燃料时闪动的缺料图标”正是画在 CompRefuelable.PostDraw 里
+         （OverlayDrawer.RenderOutOfFuelOverlay）。改成 MapMeshAndRealTime 才能看到它。
+         原版工作台（缝纫台/机械加工台等）也是这个值。 -->
+    <drawerType>MapMeshAndRealTime</drawerType>
     <graphicData>
       <texPath>Things/Building/Production/RepairBench/RepairBench</texPath>
       <graphicClass>Graphic_Multi</graphicClass>

@@ -16,6 +16,11 @@
   <FloatMenuRepairItemMarked>Repair this equipment (already marked)</FloatMenuRepairItemMarked>
   <FloatMenuRepairItemMarkedDesc>This item is already marked for repair and a colonist will handle it.</FloatMenuRepairItemMarkedDesc>
 
+  <GizmoRepairItem>Repair</GizmoRepairItem>
+  <GizmoRepairItemDesc>Mark this equipment for repair. A colonist will haul it to a repair bench, restore it to full hit points and consume repair kits.</GizmoRepairItemDesc>
+  <GizmoCancelRepairItem>Cancel repair</GizmoCancelRepairItem>
+  <GizmoCancelRepairItemDesc>Remove the repair mark from this equipment.</GizmoCancelRepairItemDesc>
+
   <AlertRepairBenchPending>Gear marked for repair</AlertRepairBenchPending>
   <AlertRepairBenchPendingDesc>Marked gear cannot be repaired: there is no repair bench with enough repair kits loaded. Build a repair bench or load more repair kits.</AlertRepairBenchPendingDesc>
 

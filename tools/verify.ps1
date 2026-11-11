@@ -154,6 +154,7 @@ try {
         $sizeX = if ($sizeMatch.Success) { $sizeMatch.Groups[1].Value } else { "" }
         $sizeZ = if ($sizeMatch.Success) { $sizeMatch.Groups[2].Value } else { "" }
         $interaction = Select-Text $node "hasInteractionCell"
+        $drawer = Select-Text $node "drawerType"
         $fuel = $node.SelectSingleNode("comps/li[@Class='CompProperties_Refuelable']")
         $cap = if ($fuel) { Select-Text $fuel "fuelCapacity" } else { $null }
         $fac = $node.SelectSingleNode("comps/li[@Class='CompProperties_AffectedByFacilities']")
@@ -163,6 +164,7 @@ try {
         if ($thingClass -ne "Building") { Fail "C4" "thingClass is '$thingClass', expected Building (plain building: no bill tab)" }
         elseif ($sizeX -ne "3" -or $sizeZ -ne "1") { Fail "C4" ("size is " + $sizeX + "x" + $sizeZ + ", expected 3x1") }
         elseif ($interaction -ne "true") { Fail "C4" "hasInteractionCell is '$interaction'" }
+        elseif ($drawer -ne "MapMeshAndRealTime") { Fail "C4" "drawerType is '$drawer', expected MapMeshAndRealTime (MapMeshOnly never runs comp PostDraw, so the vanilla pulsing out-of-fuel overlay would never appear)" }
         elseif ($cap -ne "20") { Fail "C4" "CompProperties_Refuelable fuelCapacity is '$cap', expected 20" }
         elseif ($null -eq $fac) { Fail "C4" "missing CompProperties_AffectedByFacilities" }
         elseif ($ticks -ne "3000") { Fail "C4" "modExtension ticksForFullRepair is '$ticks', expected 3000" }
@@ -556,6 +558,10 @@ try {
         if ($jd -notmatch 'ThingPlaceMode\.Direct') { $fxBad.Add("no ThingPlaceMode.Direct: item is not placed on the bench top") }
         if ($jd -notmatch 'GenPlace\.TryPlaceThing') { $fxBad.Add("no GenPlace.TryPlaceThing: item never leaves the bench after repair") }
         if ($jd -notmatch 'SkillDefOf\.Crafting') { $fxBad.Add("no SkillDefOf.Crafting: no skill while repairing") }
+        # Work animation: vanilla workbenches have none, this mod adds its own bobbing AnimationDef.
+        if ($jd -notmatch 'SetAnimation\s*\(') { $fxBad.Add("no SetAnimation(...): pawn stands perfectly still while repairing") }
+        if ($jd -notmatch 'RepairBench_WorkAnimation') { $fxBad.Add("no RepairBench_WorkAnimation: work animation must use the mod's own AnimationDef") }
+        if ($jd -notmatch 'CurAnimation') { $fxBad.Add("no CurAnimation check: cleanup could clear somebody else's animation") }
         if ($fxBad.Count -gt 0) { Fail "C-JobFx" (" | " + ($fxBad -join " | ")) } else { Pass "C-JobFx" }
     }
 } catch { Fail "C-JobFx" $_.Exception.Message }
@@ -717,6 +723,67 @@ try {
         }
     }
 } catch { Fail "C-Deploy" $_.Exception.Message }
+
+# ---------------------------------------------------------------- C-Gizmo: "Repair" command in the gear gizmo bar
+try {
+    $gizBad = New-Object System.Collections.Generic.List[string]
+
+    # 1) the comp itself must expose gizmos (ThingComp.CompGetGizmosExtra)
+    $compPath = Join-Path $modRoot "Source\RepairBench\CompRepairMarkable.cs"
+    if (-not (Test-Path -LiteralPath $compPath)) { $gizBad.Add("CompRepairMarkable.cs missing") }
+    else {
+        $ctext = [System.IO.File]::ReadAllText($compPath)
+        if ($ctext -notmatch 'CompGetGizmosExtra') { $gizBad.Add("CompRepairMarkable has no CompGetGizmosExtra override") }
+        if ($ctext -notmatch 'Command_Action') { $gizBad.Add("CompRepairMarkable does not return Command_Action gizmos") }
+    }
+
+    # 2) the patch must attach it to the vanilla abstract weapon / apparel bases
+    $patchPath = Join-Path $modRoot "Patches\RepairBench_ItemGizmo.xml"
+    if (-not (Test-Path -LiteralPath $patchPath)) { $gizBad.Add("Patches\RepairBench_ItemGizmo.xml missing") }
+    else {
+        $ptext = [System.IO.File]::ReadAllText($patchPath)
+        if ($ptext -notmatch 'ThingDef\[@Name="BaseWeapon"\]') { $gizBad.Add("patch does not target BaseWeapon") }
+        if ($ptext -notmatch 'ThingDef\[@Name="ApparelNoQualityBase"\]') { $gizBad.Add("patch does not target ApparelNoQualityBase") }
+        if ($ptext -notmatch 'RepairBench\.CompProperties_RepairMarkable') { $gizBad.Add("patch does not add CompProperties_RepairMarkable") }
+        # the xpath must really match a node in the vanilla base defs, otherwise the patch silently does nothing
+        $coreFiles = @{
+            "BaseWeapon" = Join-Path $CoreDir "Defs\ThingDefs_Misc\Weapons\BaseWeapons.xml"
+            "ApparelNoQualityBase" = Join-Path $CoreDir "Defs\ThingDefs_Misc\Apparel_Various.xml"
+        }
+        foreach ($k in @("BaseWeapon", "ApparelNoQualityBase")) {
+            $p = $coreFiles[$k]
+            if (-not (Test-Path -LiteralPath $p)) { $gizBad.Add("core file missing: $p"); continue }
+            $doc = LoadXml $p
+            $xq = "//ThingDef[@Name='" + $k + "']/comps"
+            if ($null -eq $doc.SelectSingleNode($xq)) { $gizBad.Add("xpath cannot match " + $xq) }
+        }
+    }
+
+    # 3) the work animation def and its DefOf field must exist (cleared when the job ends)
+    $anim = Get-DefNode "Defs\AnimationDefs\RepairBench_Animation.xml" "RepairBench_WorkAnimation"
+    if ($null -eq $anim) { $gizBad.Add("AnimationDef RepairBench_WorkAnimation missing") }
+    else {
+        if ((Select-Text $anim "durationTicks") -ne "40") { $gizBad.Add("AnimationDef durationTicks is not 40") }
+        $part = $anim.SelectSingleNode("keyframeParts/li[key='Root']/value/keyframes/li")
+        if ($null -eq $part) { $gizBad.Add("AnimationDef has no Root keyframes") }
+    }
+    $defOfPath = Join-Path $modRoot "Source\RepairBench\RepairBenchDefOf.cs"
+    if (Test-Path -LiteralPath $defOfPath) {
+        $dtext = [System.IO.File]::ReadAllText($defOfPath)
+        if ($dtext -notmatch 'AnimationDef\s+RepairBench_WorkAnimation') { $gizBad.Add("RepairBenchDefOf lacks AnimationDef RepairBench_WorkAnimation") }
+    } else { $gizBad.Add("RepairBenchDefOf.cs missing") }
+
+    # 4) the gizmo labels must exist in the English keyed file (C-TranslateKeys only checks that C# uses them)
+    $enKeys = Join-Path $modRoot "Languages\English\Keyed\RepairBench_Keys.xml"
+    if (Test-Path -LiteralPath $enKeys) {
+        $ktext = [System.IO.File]::ReadAllText($enKeys)
+        foreach ($k in @("GizmoRepairItem", "GizmoRepairItemDesc", "GizmoCancelRepairItem", "GizmoCancelRepairItemDesc")) {
+            if ($ktext -notmatch ('<' + $k + '>')) { $gizBad.Add("English keyed file lacks $k") }
+        }
+    }
+
+    if ($gizBad.Count -gt 0) { Fail "C-Gizmo" (" | " + ($gizBad -join " | ")) } else { Pass "C-Gizmo" }
+} catch { Fail "C-Gizmo" $_.Exception.Message }
 
 # ---------------------------------------------------------------- summary
 Write-Host ""

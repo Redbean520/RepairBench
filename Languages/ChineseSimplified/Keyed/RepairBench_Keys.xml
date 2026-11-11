@@ -16,6 +16,11 @@
   <FloatMenuRepairItemMarked>维修装备（已标记）</FloatMenuRepairItemMarked>
   <FloatMenuRepairItemMarkedDesc>这件装备已经带修补标记，小人会自动处理。</FloatMenuRepairItemMarkedDesc>
 
+  <GizmoRepairItem>维修</GizmoRepairItem>
+  <GizmoRepairItemDesc>给这件装备打上修补标记。小人会把它搬到修补台，消耗修补剂把耐久修满。</GizmoRepairItemDesc>
+  <GizmoCancelRepairItem>取消维修</GizmoCancelRepairItem>
+  <GizmoCancelRepairItemDesc>取消这件装备上的修补标记。</GizmoCancelRepairItemDesc>
+
   <AlertRepairBenchPending>有装备等待修补</AlertRepairBenchPending>
   <AlertRepairBenchPendingDesc>已标记的装备无法修理：没有装了足够修补剂的修补台。请建造修补台或补满修补剂。</AlertRepairBenchPendingDesc>
 

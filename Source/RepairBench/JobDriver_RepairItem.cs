@@ -61,6 +61,10 @@ namespace RepairBench
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
+            // 兜底：Job 以任何方式结束（完成 / 失败 / 被打断 / 精神崩溃）都清掉工作动画，
+            // 否则小人会一直带着 RepairBench_WorkAnimation 晃下去。
+            AddFinishAction(condition => StopWorkAnimation());
+
             Toil gotoItem = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch);
             gotoItem.FailOnDespawnedNullOrForbidden(TargetIndex.A);
             gotoItem.FailOnSomeonePhysicallyInteracting(TargetIndex.A);
@@ -121,13 +125,43 @@ namespace RepairBench
             wait.FailOnDestroyedOrNull(TargetIndex.A);
             wait.FailOnDestroyedOrNull(TargetIndex.B);
             wait.AddFailCondition(() => !IsStillDesignated(item));
+            // 干活期间让小人轻微晃动（1.7 原版工作台本身没有小人动画）。
+            wait.AddPreInitAction(StartWorkAnimation);
+            wait.AddFinishAction(StopWorkAnimation);
             yield return wait;
 
             yield return Toils_General.DoAtomic(FinishRepair);
         }
 
+        /** 开始干活时给小人挂上晃动动画（Defs/AnimationDefs/RepairBench_Animation.xml）。 */
+        private void StartWorkAnimation()
+        {
+            AnimationDef animation = RepairBenchDefOf.RepairBench_WorkAnimation;
+            if (animation != null && pawn.Spawned)
+            {
+                pawn.Drawer.renderer.SetAnimation(animation);
+            }
+        }
+
         /**
-         * 台面上离小人最近的空格子；都占着就返回 Invalid（调用方退回落地面）。
+         * 收工时清掉动画。只清“自己的”那个动画：万一这段时间里游戏或其它 mod 换了别的动画
+         * （比如 Anomaly 的变异体动画），不要顺手把它也清掉。
+         */
+        private void StopWorkAnimation()
+        {
+            if (pawn.Drawer == null || pawn.Drawer.renderer == null)
+            {
+                return;
+            }
+            AnimationDef animation = RepairBenchDefOf.RepairBench_WorkAnimation;
+            if (animation != null && pawn.Drawer.renderer.CurAnimation == animation)
+            {
+                pawn.Drawer.renderer.SetAnimation(null);
+            }
+        }
+
+        /**
+         * 台面上离小人最近的格子；都占着就返回 Invalid（调用方退回落地面）。
          * 工作台每格只允许 1 个物品（BuildingProperties.maxItemsInCell 默认 1），所以 3x1 的台最多摆 3 件。
          */
         private IntVec3 FindFreeBenchCell()

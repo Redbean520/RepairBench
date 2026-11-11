@@ -18,5 +18,8 @@ namespace RepairBench
         // 自定义修补特效与收尾音（Defs/Effects/RepairBench_Effecters.xml、Defs/SoundDefs/RepairBench_Sounds.xml）
         public static EffecterDef RepairBench_RepairEffect;
         public static SoundDef RepairBench_RepairDone;
+
+        // 干活时小人的轻微晃动（Defs/AnimationDefs/RepairBench_Animation.xml）
+        public static AnimationDef RepairBench_WorkAnimation;
     }
 }

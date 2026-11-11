@@ -23,11 +23,16 @@
 | 16 | **台面复用**：连着修两件装备 | 第一件修完被放回**台旁地上**、台面空出；第二件能正常摆上台面（不会因为台面被占而掉到地上） | 截图（修完第一件后的台面 + 第二件在台上） |
 | 17 | **缺料的三层提示**：把修补台上的修补剂全部取出（或让它为 0）→ 选中修补台 → 再看有标记物品时的右侧警报 | ① 检视面板出现红字「修补剂不足，请先装入更多修补剂再修理。」；② 选中台就有修补剂余量条 Gizmo；③ 右侧靠上出现 High Alert「有装备等待修补」并响提示音 | 截图（检视面板红字 + 燃料条 + Alert）；Player.log 搜 `RepairBench_NoKitsInBench` |
 | 18 | **红字消失确认**：进有修补台的存档，看 Player.log | 不再出现 `Config error in RepairBench_Bench: graphicData defines a shadowInfo but staticSunShadowHeight > 0` | 把 Player.log 里含 `RepairBench` 的行整段贴回来 |
+| 19 | **缺料图标闪烁**：把修补台上的修补剂全部取出，**不要选中台子**，隔着屏幕看台子本体（可拉远视角） | 台子上浮起**脉动的缺料图标**（修补剂图标 + 红色禁止斜杠），一闪一闪，和原版燃料锻造台没燃料时完全一样；装上修补剂后图标消失 | 截图（拉近的台子，能看清图标）；Player.log 搜 `RepairBench` |
+| 20 | **小人工作动画**：让小人修一件 50% 耐久的装备，盯住小人几秒 | 小人面向台面，身体做**轻微前后晃动**（像在来回锉磨，幅度很小不夸张）；打断/修完立刻停下恢复正常站姿，不会一直抖 | 录屏 5 秒；若觉得晃动太强/太弱，说方向（不是 bug，改 `Defs/AnimationDefs/RepairBench_Animation.xml` 里的 angle） |
+| 21 | **装备命令栏「维修」按钮**：点选地上约 50% 耐久的武器/衣物/护甲（不是点小人） | 检查器底部命令栏出现「维修」按钮（扳手图标），点一下即挂修补标记（响一声、地图上出现标记）；再点同一件装备，同一位置变成「取消维修」，点击可撤掉标记。满耐久装备、穿在身上的装备、未研究「修补技术」时不出现该按钮。原版武器/护甲/衣物、以及从原版 `BaseWeapon` / `ApparelNoQualityBase` 派生的 mod 装备都应有此按钮 | 截图（命令栏 + 点击后的标记）；Player.log 搜 `CompRepairMarkable` |
 
 补充：
 - 第 3 条若消耗修补剂数量与「缺失耐久 × 10」不符，请记录：修前 HP/最大 HP、台上修补剂前后数量。
 - 第 6 条如果进度归零，说明 MapComponent 进度没接上（已知风险 R12）。
-- 第 9 条右键菜单只在**有小人被选中**时出现（原版机制）；没有小人被选中时不会显示。
+- 第 9 条右键菜单只在**有小人被选中**时出现（原版机制）；没有小人被选中时不会显示。不需要小人时用第 21 条的命令栏按钮。
+- 第 19 条的根因：台子从原版 `BuildingBase` 继承了 `drawerType = MapMeshOnly`，这种绘制模式下 comp 的 `PostDraw` 根本不会被调用，所以原版 `CompRefuelable` 的缺料脉冲图标画不出来；已改成原版工作台用的 `MapMeshAndRealTime`。
+- 第 21 条的按钮是通过 Patch 往原版抽象基类 `BaseWeapon` 与 `ApparelNoQualityBase` 的 comps 里追加自定义 comp 实现的（无 Harmony）。若某个第三方 mod 的装备没有这个按钮，说明它的 Def 没派生自这两个原版基类，属已知边界，不是本 mod 的 bug。
 - 第 10 条已修过两次：最早单张 PNG + `Graphic_StackCount` 会让游戏按文件夹找图而报红字；后来改成 `RepairKit_a/_b/_c/_d.png` 四张堆叠图；现按你的要求固定成**单张** `RepairKit.png` + `Graphic_Single`（任何堆叠数量同一张图）。
 - 第 8 条中文曾全部失效：DefInjected 用了 `<ThingDef><defName><label>` 嵌套写法，1.7 只认扁平 `<defName.label>`（否则日志报 `Key lacks a dot` 全部拒收）；现已改成扁平 key，日志里的 `Translation data ... has N errors` 若仍有，请确认是否为本 mod（数一下是不是别人的汉化包）。
 - 第 15 条的音效与粒子是本 mod 自己合成的（`Sounds/RepairBench/RepairLoop.wav`、`RepairDone.wav`，金属屑 16×16 ×3）；觉得太响/太轻、屑片太大/太小，告诉我方向（不是 bug，直接调参数）。
