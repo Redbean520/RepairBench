@@ -1,6 +1,6 @@
 # 工坊描述文案（Repair Bench）
 
-> 当前发布：**1.0.0**（已打包：`release\RepairBench\RepairBench-1.0.0\` 与 `RepairBench-1.0.0.zip`；无 PublishedFileId.txt，属首次上传）｜目标：RimWorld 1.7 ｜依赖：无
+> 当前发布：**1.0.0**（已打包：`release\RepairBench\RepairBench-1.0.0\` 与 `RepairBench-1.0.0.zip`；**已首次上传创意工坊，PublishedFileId = 3837851806**，2026-11-11）｜目标：RimWorld 1.7 ｜依赖：无
 > 更新日期：2026-11-11（文案改版：只写玩家能感知的内容，不写实现细节）
 >
 > 受众是**玩家**，不是开发者：只写他们能看到的玩法、花费和问题；不写引擎/动画/音效/程序集/XML 结构这类内部实现，也不解释 mod 之间"谁让位给谁"的机制。
@@ -180,6 +180,7 @@ Bugs, balance notes and feature requests are welcome below.
 
 ## 内部记录（不贴 Steam）
 
+- 2026-11-11：首次上传创意工坊，PublishedFileId `3837851806`（从此以后游戏内更新走「更新已有条目」）。
 - v1.0.0（2026-11-11）：首个发布版——修补台（3×1、按材料染色、可涂漆、20 个修补剂容量）、通用修补剂（10 钢铁 + 5 任意织物/皮革 → 5）、修补技术研究（600、前置 Smithing）、Orders 修补标记（可拖框）、物品命令栏维修按钮、右键维修 / 强制维修（装备与台两种入口）、按缺失耐久扣料与计时（满耐久 3000 ticks、10 个修补剂）、断点续修 + 读档保留进度（MapComponent 存档）、四层缺料提示（High 警报 / 台面脉动图标 / 燃料 gizmo / 检视红字）、自制金属屑粒子与锉磨/扣合音、自制工作动画（检测到 Yayo's Animation 时让位给它）、中英双语。
 
 ## 维护提示
@@ -187,5 +188,5 @@ Bugs, balance notes and feature requests are welcome below.
 1. 文案面向玩家：写"玩家看到什么、要花什么、怎么排错"，不写实现细节（引擎、动画、音效、Harmony、XML 结构、MapComponent 存档方式等）。技术细节放本文件「内部记录」与 README。
 2. 改功能时同步：本文档「内容」段 → `About/About.xml` 的 `<description>`（纯文本，不能用 BBCode）→ 工坊页面（手动改）。
 3. 发版流程：三处版本号同步（`About/About.xml` / `RepairBenchMod.cs` / `.csproj`）→ build → `tools\verify.ps1 -Strict` → `tools\deploy.ps1` → `tools\make-release.ps1` → `git tag v<版本>` → 游戏内上传/更新。
-4. 首次上传后游戏会写 `About\PublishedFileId.txt`，**不要丢**（不进 git、不进发布包）；之后每次部署脚本会先备份再写回，避免新建重复工坊条目。
+4. 工坊条目 ID = **3837851806**（首次上传 2026-11-11 生成，存在 `About\PublishedFileId.txt`；不进 git，部署脚本会先备份再写回）。**这个文件不能丢**，丢了再上传会新建重复工坊条目。
 5. 粘贴后自检：无 Markdown（`#`、`**`）、无 HTML、BBCode 标签成对闭合、正文没有「安装」「更新日志」板块。
