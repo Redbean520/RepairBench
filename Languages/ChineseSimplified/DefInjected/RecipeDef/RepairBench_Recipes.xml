@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <RepairBench_MakeRepairKit.label>制作修补剂</RepairBench_MakeRepairKit.label>
-  <RepairBench_MakeRepairKit.description>用钢铁和布料制作修补剂。</RepairBench_MakeRepairKit.description>
+  <RepairBench_MakeRepairKit.description>用钢铁和任意织物制作修补剂。</RepairBench_MakeRepairKit.description>
   <RepairBench_MakeRepairKit.jobString>正在制作修补剂。</RepairBench_MakeRepairKit.jobString>
 </LanguageData>

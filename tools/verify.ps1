@@ -188,7 +188,10 @@ try {
             "//thingDefs/li",
             "//thingCategories/li",
             "//fixedIngredientFilter/thingDefs/li",
+            "//fixedIngredientFilter/categories/li",
             "//ingredients//filter/thingDefs/li",
+            "//ingredients//filter/categories/li",
+            "//stuffCategories/li",
             "//products/*",
             "//prerequisites/li"
         )
@@ -873,6 +876,38 @@ try {
     } else { $yBad.Add("README.md missing") }
     if ($yBad.Count -gt 0) { Fail "C-Yayo" (" | " + ($yBad -join " | ")) } else { Pass "C-Yayo" }
 } catch { Fail "C-Yayo" $_.Exception.Message }
+
+# ---------------------------------------------------------------- C-Recipe: bench is stuffable + fixed 15 steel, kit needs any textile
+try {
+    $rBad = New-Object System.Collections.Generic.List[string]
+    $benchNode = Get-DefNode "Defs\ThingDefs_Buildings\RepairBench_Bench.xml" "RepairBench_Bench"
+    if ($null -eq $benchNode) { $rBad.Add("RepairBench_Bench not found") }
+    else {
+        $stuffCount = Select-Text $benchNode "costStuffCount"
+        if ($stuffCount -ne "75") { $rBad.Add("costStuffCount is '$stuffCount', expected 75 (bench body made of any Metallic/Woody stuff)") }
+        $stuffCats = @($benchNode.SelectNodes("stuffCategories/li") | ForEach-Object { $_.InnerText.Trim() })
+        foreach ($cat in @("Metallic", "Woody")) {
+            if ($stuffCats -notcontains $cat) { $rBad.Add("bench stuffCategories lacks " + $cat) }
+        }
+        $steelCost = Select-Text $benchNode "costList/Steel"
+        if ($steelCost -ne "15") { $rBad.Add("bench fixed costList/Steel is '$steelCost', expected 15") }
+        if ($benchNode.SelectSingleNode("costList/Cloth")) { $rBad.Add("bench still costs Cloth; the fixed part must be 15 steel only") }
+    }
+    $recNode = Get-DefNode "Defs\RecipeDefs\RepairBench_MakeRepairKit.xml" "RepairBench_MakeRepairKit"
+    if ($null -eq $recNode) { $rBad.Add("RepairBench_MakeRepairKit not found") }
+    else {
+        $steelCount = Select-Text $recNode "ingredients/li[filter/thingDefs/li='Steel']/count"
+        if ($steelCount -ne "10") { $rBad.Add("kit recipe steel count is '$steelCount', expected 10") }
+        $textileCount = Select-Text $recNode "ingredients/li[filter/categories/li='Textiles']/count"
+        if ($textileCount -ne "5") { $rBad.Add("kit recipe textile count is '$textileCount', expected 5") }
+        if (-not $recNode.SelectSingleNode("fixedIngredientFilter/categories/li[.='Textiles']")) {
+            $rBad.Add("kit fixedIngredientFilter lacks the Textiles category (bill filter would not allow other fabrics)")
+        }
+        $product = Select-Text $recNode "products/RepairBench_RepairKit"
+        if ($product -ne "5") { $rBad.Add("kit recipe product count is '$product', expected 5") }
+    }
+    if ($rBad.Count -gt 0) { Fail "C-Recipe" (" | " + ($rBad -join " | ")) } else { Pass "C-Recipe" }
+} catch { Fail "C-Recipe" $_.Exception.Message }
 
 # ---------------------------------------------------------------- summary
 Write-Host ""

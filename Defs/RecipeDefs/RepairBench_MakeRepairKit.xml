@@ -4,7 +4,7 @@
   <RecipeDef>
     <defName>RepairBench_MakeRepairKit</defName>
     <label>make repair kit</label>
-    <description>Assemble repair kits from steel and cloth.</description>
+    <description>Assemble repair kits from steel and any textile.</description>
     <jobString>Making repair kit.</jobString>
     <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
     <effectWorking>Cook</effectWorking>
@@ -20,10 +20,11 @@
         <count>10</count>
       </li>
       <li>
+        <!-- 任意织物：原版 ThingCategoryDef "Textiles"（布、合纤、魔鬼菌丝、超织物、各类毛料…）。 -->
         <filter>
-          <thingDefs>
-            <li>Cloth</li>
-          </thingDefs>
+          <categories>
+            <li>Textiles</li>
+          </categories>
         </filter>
         <count>5</count>
       </li>
@@ -31,8 +32,10 @@
     <fixedIngredientFilter>
       <thingDefs>
         <li>Steel</li>
-        <li>Cloth</li>
       </thingDefs>
+      <categories>
+        <li>Textiles</li>
+      </categories>
     </fixedIngredientFilter>
     <products>
       <RepairBench_RepairKit>5</RepairBench_RepairKit>

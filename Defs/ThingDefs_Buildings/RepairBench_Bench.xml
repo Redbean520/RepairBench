@@ -34,9 +34,15 @@
     </graphicData>
     <castEdgeShadows>true</castEdgeShadows>
     <staticSunShadowHeight>0.20</staticSunShadowHeight>
+    <!-- 台体可以用任意金属/木材制作（原版工作台同款 two stuff categories），
+         但固定还要 15 钢铁（台钳、丝杠这些承力件）。总造价与原来的 75 钢 + 15 布相当。 -->
+    <costStuffCount>75</costStuffCount>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+    </stuffCategories>
     <costList>
-      <Steel>75</Steel>
-      <Cloth>15</Cloth>
+      <Steel>15</Steel>
     </costList>
     <altitudeLayer>Building</altitudeLayer>
     <fillPercent>0.5</fillPercent>

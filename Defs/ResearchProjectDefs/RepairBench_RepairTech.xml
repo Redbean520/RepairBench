@@ -10,9 +10,10 @@
     <prerequisites>
       <li>Smithing</li>
     </prerequisites>
-    <!-- Directly below Smithing (1.00 / 3.50); (1.00, 4.20) is free in Core's 1.7 research grid. -->
-    <researchViewX>1.00</researchViewX>
-    <researchViewY>4.20</researchViewY>
+    <!-- 紧挨「长剑 (LongBlades)」右边：LongBlades 在 (3.00, 5.60)，(4.00, 5.60) 在 1.7 全部
+         Core + DLC 项目里是空的（同排只有 PlateArmor 2.00、HeavyBridges 0.00）。 -->
+    <researchViewX>4.00</researchViewX>
+    <researchViewY>5.60</researchViewY>
     <generalRules>
       <rulesStrings>
         <li>subject->repair techniques</li>
