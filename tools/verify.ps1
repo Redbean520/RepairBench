@@ -562,6 +562,10 @@ try {
         if ($jd -notmatch 'SetAnimation\s*\(') { $fxBad.Add("no SetAnimation(...): pawn stands perfectly still while repairing") }
         if ($jd -notmatch 'RepairBench_WorkAnimation') { $fxBad.Add("no RepairBench_WorkAnimation: work animation must use the mod's own AnimationDef") }
         if ($jd -notmatch 'CurAnimation') { $fxBad.Add("no CurAnimation check: cleanup could clear somebody else's animation") }
+        # Coexistence with animation mods (e.g. Yayo's Animation): they yield via PawnRenderer.HasAnimation,
+        # and we must not stomp on an animation another mod already put on the pawn.
+        if ($jd -notmatch 'HasAnimation') { $fxBad.Add("no renderer.HasAnimation guard: could overwrite another mod's animation") }
+        if ($jd -notmatch 'ownsWorkAnimation') { $fxBad.Add("no ownsWorkAnimation flag: cleanup could clear another mod's animation") }
         if ($fxBad.Count -gt 0) { Fail "C-JobFx" (" | " + ($fxBad -join " | ")) } else { Pass "C-JobFx" }
     }
 } catch { Fail "C-JobFx" $_.Exception.Message }

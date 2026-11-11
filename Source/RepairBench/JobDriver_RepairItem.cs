@@ -133,14 +133,37 @@ namespace RepairBench
             yield return Toils_General.DoAtomic(FinishRepair);
         }
 
-        /** 开始干活时给小人挂上晃动动画（Defs/AnimationDefs/RepairBench_Animation.xml）。 */
+        /** 本驱动是否真的挂上了自己的动画（挂上了才由我们负责在收工时清掉）。 */
+        private bool ownsWorkAnimation;
+
+        /**
+         * 开始干活时给小人挂上晃动动画（Defs/AnimationDefs/RepairBench_Animation.xml）。
+         *
+         * 兼容性：如果进场时小人身上已经有别人的动画（其它动画 mod 或 Anomaly 变异体已经 SetAnimation），
+         * 本 mod 不抢——直接让对方的动画播完。Yayo's Animation 这类“程序化画小人”的 mod 反过来会检查
+         * PawnRenderer.HasAnimation（Yayo 源码 AnimationCore.cs:37），发现我们挂了 AnimationDef 就把自己那一帧
+         * 的数据整体 Reset 让位，所以两套机制不会叠成抽风，也不需要 Harmony 去打对方。
+         */
         private void StartWorkAnimation()
         {
-            AnimationDef animation = RepairBenchDefOf.RepairBench_WorkAnimation;
-            if (animation != null && pawn.Spawned)
+            ownsWorkAnimation = false;
+            if (pawn == null || !pawn.Spawned || pawn.Drawer == null || pawn.Drawer.renderer == null)
             {
-                pawn.Drawer.renderer.SetAnimation(animation);
+                return;
             }
+            PawnRenderer renderer = pawn.Drawer.renderer;
+            if (renderer.HasAnimation)
+            {
+                // 已经有别的动画在放：不覆盖，收工时也不清它。
+                return;
+            }
+            AnimationDef animation = RepairBenchDefOf.RepairBench_WorkAnimation;
+            if (animation == null)
+            {
+                return;
+            }
+            renderer.SetAnimation(animation);
+            ownsWorkAnimation = true;
         }
 
         /**
@@ -149,14 +172,21 @@ namespace RepairBench
          */
         private void StopWorkAnimation()
         {
-            if (pawn.Drawer == null || pawn.Drawer.renderer == null)
+            try
             {
-                return;
+                if (!ownsWorkAnimation || pawn == null || pawn.Drawer == null || pawn.Drawer.renderer == null)
+                {
+                    return;
+                }
+                AnimationDef animation = RepairBenchDefOf.RepairBench_WorkAnimation;
+                if (animation != null && pawn.Drawer.renderer.CurAnimation == animation)
+                {
+                    pawn.Drawer.renderer.SetAnimation(null);
+                }
             }
-            AnimationDef animation = RepairBenchDefOf.RepairBench_WorkAnimation;
-            if (animation != null && pawn.Drawer.renderer.CurAnimation == animation)
+            finally
             {
-                pawn.Drawer.renderer.SetAnimation(null);
+                ownsWorkAnimation = false;
             }
         }
 

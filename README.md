@@ -58,9 +58,15 @@ RimWorld 1.7 mod —— 用命令标记把磨损的武器 / 衣物 / 护甲送�
 - 只做 XML Def + 1 个补丁（往原版「命令」分类追加设计器）+ 独立 DLL，不改原版 Def 数值。
 - 与「修理建筑」的原版系统、各类工作类型 mod 不冲突；新增工作类型「修补」默认激活，可在工作优先级里调整。
 - 建筑按原版工作台谱系派生（`BenchBase`），放置预览的工作格显示原版座椅图形；不挂账单页、不耗电。
-- 与 **Yayo's Animation** 共存：原版本身没有「工作动画」（工作台工作是站着放特效），
-  大家看到的工作动作来自 Yayo's Animation 按 JobDef 名硬编码的白名单；本 mod 的 JobDef 不在它的名单里，
-  所以本 mod 自带一个 Root 角度动画自己动。Yayo 检测到小人有动画会让位（不叠加），两边不打架。
+- 与 **Yayo's Animation** 共存（已对过它的源码，不需要 Harmony、不挑加载顺序）：
+  原版本身没有「工作动画」（工作台工作是站着放持续特效），大家看到的小人动作来自 Yayo 这类 mod。
+  - Yayo 的程序化动画每帧先检查 `PawnRenderer.HasAnimation`（Yayo 源码 `AnimationCore.cs:37`：
+    `if (!pawn.Spawned || pawn.Dead || pawn.Drawer.renderer.HasAnimation) { pdd.Reset(); return; }`），
+    发现本 mod 给小人挂了 AnimationDef 就整体让位，不会两套动作叠成抽风；
+  - Yayo 只对自己硬编码的一批 JobDef 名做动画（`DoBill` / `Repair` / `Refuel` / `RefuelAtomic` / `Reload` / `RepairMech` …），
+    本 mod 的 `RepairBench_RepairItem` 不在名单里，所以修补时由本 mod 自带的 Root 角度动画自己动；
+  - 本 mod 也做了对称处理：开工时如果小人已经有别人的动画就不覆盖，收工只清自己挂的那一个（不会把 Yayo / Anomaly 的动画清掉）。
+  - 结论：装 Yayo 时它在别的活上照常动，修补这一活由本 mod 接管；不装 Yayo 时修补照样有动画。
 - 存档：新增自定义 MapComponent 记录修理进度；**中途移除本 mod 未验证**（建议先修完再移除）。
 
 ## 安装
