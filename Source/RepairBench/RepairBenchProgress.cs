@@ -100,8 +100,9 @@ namespace RepairBench
             {
                 return;
             }
-            entries.RemoveAll(e => e == null || e.thing == null || e.thing.Destroyed ||
-                map.designationManager.DesignationOn(e.thing, RepairBenchDefOf.RepairBench_RepairDesignation) == null);
+            // Only drop entries whose item is gone. Worn-gear repairs have no ground designation,
+            // so keying on the designation would throw their progress away between work sessions.
+            entries.RemoveAll(e => e == null || e.thing == null || e.thing.Destroyed);
         }
     }
 }

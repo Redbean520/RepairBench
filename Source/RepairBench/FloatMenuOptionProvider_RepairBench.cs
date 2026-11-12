@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RimWorld;
+using UnityEngine;
 using Verse;
 using Verse.AI;
 using Verse.Sound;
@@ -10,11 +11,13 @@ namespace RepairBench
     /// Right-click options:
     /// - on a damaged weapon / apparel lying on the ground: mark it for repair, or order a colonist
     ///   to go and repair it right now ("force repair", the same idea as vanilla prioritize-work);
-    /// - on a repair bench: force repair for every marked item on that map, using that bench.
+    /// - on a repair bench: repair the selected pawn's own worn / equipped gear right there (the pawn
+    ///   takes it off, repairs it on this bench and puts it back on), and force repair for every marked
+    ///   item on that map using that bench.
     /// FloatMenuMakerMap.Init() instantiates every non-abstract FloatMenuOptionProvider subclass by
     /// reflection, so this needs no Def and no Harmony patch.
-    /// v1 only repairs items on the ground, so worn/held gear gets a disabled option with a reason
-    /// instead of a silently missing command.
+    /// Ground items are marked / hauled as before; worn gear is only repairable from the bench menu,
+    /// because a worn item cannot be designated.
     /// </summary>
     public class FloatMenuOptionProvider_RepairBench : FloatMenuOptionProvider
     {
@@ -43,8 +46,18 @@ namespace RepairBench
             {
                 yield break;
             }
+            // A clicked pawn shows up in both ClickedThings and ClickedPawns; pawn menus are not our
+            // business here (own-gear repair is offered on the bench instead).
+            if (clickedThing is Pawn)
+            {
+                yield break;
+            }
             if (clickedThing.def == RepairBenchDefOf.RepairBench_Bench)
             {
+                foreach (FloatMenuOption ownGearOption in OwnGearOptionsForBench(clickedThing, context))
+                {
+                    yield return ownGearOption;
+                }
                 foreach (FloatMenuOption benchOption in ForceRepairOptionsForBench(clickedThing, context))
                 {
                     yield return benchOption;
@@ -116,6 +129,65 @@ namespace RepairBench
             {
                 tooltip = new TipSignal("FloatMenuRepairItemDesc".Translate(kits))
             };
+        }
+
+        /// <summary>
+        /// "Repair &lt;item&gt;" entries for the selected pawn's own damaged gear, shown when the player
+        /// right-clicks a repair bench: the pawn walks there, takes the gear off itself, repairs it on
+        /// the bench, then puts it back on. Worn gear has no ground designation, so this menu is the
+        /// only entry point for it.
+        /// </summary>
+        private static IEnumerable<FloatMenuOption> OwnGearOptionsForBench(Thing bench, FloatMenuContext context)
+        {
+            Pawn pawn = context?.FirstSelectedPawn;
+            if (pawn == null)
+            {
+                yield break;
+            }
+            foreach (Thing gear in RepairBenchUtility.GetDamagedWornGear(pawn))
+            {
+                int kits = RepairBenchUtility.KitsFor(gear, null);
+                int hp = gear.HitPoints;
+                int maxHp = Mathf.Max(1, gear.MaxHitPoints);
+                int seconds = Mathf.Max(1, Mathf.RoundToInt(
+                    RepairBenchUtility.TicksFor(gear, null, RepairBenchUtility.WorkSpeedFor(pawn)) / 60f));
+                string label = "FloatMenuRepairOwnItem".Translate(gear.LabelShort);
+                string tooltip = "FloatMenuRepairOwnItemDesc".Translate(hp, maxHp, Mathf.RoundToInt(100f * hp / maxHp), kits, seconds);
+                if (!CanPawnDoRepairWork(pawn))
+                {
+                    yield return Disabled(label, "FloatMenuForceRepairCannot".Translate());
+                    continue;
+                }
+                Job job = RepairBenchUtility.TryMakeWornRepairJob(pawn, gear, bench, out string failReason);
+                if (job == null)
+                {
+                    yield return Disabled(label, failReason ?? (string)"FloatMenuRepairOwnCannot".Translate());
+                    continue;
+                }
+                Thing gearLocal = gear;
+                yield return new FloatMenuOption(
+                    label,
+                    delegate
+                    {
+                        // Rebuild at click time: the player may have changed gear while the menu was open.
+                        Job ordered = RepairBenchUtility.TryMakeWornRepairJob(pawn, gearLocal, bench, out string reason);
+                        if (ordered == null)
+                        {
+                            Messages.Message(reason ?? (string)"FloatMenuRepairOwnCannot".Translate(), MessageTypeDefOf.RejectInput, false);
+                            return;
+                        }
+                        pawn.jobs.TryTakeOrderedJobPrioritizedWork(
+                            ordered,
+                            RepairBenchDefOf.RepairBench_RepairDesignated.Worker,
+                            bench.Position);
+                    },
+                    MenuOptionPriority.Default,
+                    null,
+                    bench)
+                {
+                    tooltip = new TipSignal(tooltip)
+                };
+            }
         }
 
         private IEnumerable<FloatMenuOption> ForceRepairOptionsForBench(Thing bench, FloatMenuContext context)

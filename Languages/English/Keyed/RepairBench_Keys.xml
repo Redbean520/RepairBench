@@ -21,6 +21,12 @@
   <FloatMenuForceRepairDesc>Send this colonist to repair it right now. Needs {0} repair kit(s) and a repair bench with enough kits loaded.</FloatMenuForceRepairDesc>
   <FloatMenuForceRepairCannot>Cannot force repair right now: the item is reserved, there is no usable repair bench, or the Repair work type is off for this colonist.</FloatMenuForceRepairCannot>
 
+  <FloatMenuRepairOwnItem>Repair own gear: {0}</FloatMenuRepairOwnItem>
+  <FloatMenuRepairOwnItemDesc>The selected colonist takes this off, repairs it on this bench and puts it back on. {0}/{1} hit points ({2}%), {3} repair kit(s), about {4} s.</FloatMenuRepairOwnItemDesc>
+  <FloatMenuRepairOwnNotWorn>That equipment is not worn or held by this colonist.</FloatMenuRepairOwnNotWorn>
+  <FloatMenuRepairOwnCannot>Cannot repair this equipment right now: it is locked, reserved, or the repair bench is unusable.</FloatMenuRepairOwnCannot>
+  <MessageRepairBenchReequipped>Repair interrupted - the colonist put the equipment back on.</MessageRepairBenchReequipped>
+
   <GizmoRepairItem>Repair</GizmoRepairItem>
   <GizmoRepairItemDesc>Mark this equipment for repair. A colonist will haul it to a repair bench, restore it to full hit points and consume repair kits.</GizmoRepairItemDesc>
   <GizmoCancelRepairItem>Cancel repair</GizmoCancelRepairItem>

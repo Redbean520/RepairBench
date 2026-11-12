@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <RepairBench_RepairItem.reportString>正在修补 TargetA。</RepairBench_RepairItem.reportString>
+  <RepairBench_RepairWornItem.reportString>正在修补自己的 TargetA。</RepairBench_RepairWornItem.reportString>
 </LanguageData>

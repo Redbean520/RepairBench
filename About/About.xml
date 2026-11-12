@@ -9,20 +9,25 @@
 · 研究「repair techniques」（修补技术）；造好修补台（任意金属/木材 + 15 钢铁），用 10 钢铁 + 5 任意织物或皮革做出「修补剂」，装进台里。
 · 给地上磨损的装备打「修补」标记（Orders 菜单框选），或选中装备点命令栏「维修」，也可以右键「维修 / 强制维修」。
 · 小人把装备搬到台面上修满 100% 耐久，品质、材质、词条全部保留；修完留在台旁，不自动归仓。
+· 穿戴中 / 手持中的装备不用先脱：选中小人 → 右键修补台 → 列出身自己上耐久不满的装备，
+  小人会自己脱下、在台面上修好、再自动穿回。
 · 缺台或缺料时右侧会出现警报，台子缺料会亮图标。
 
 ◆ 范围
-· v1 只修地上的装备（武器 / 衣物 / 护甲）。穿戴中或手持中的装备请先放到地上。
+· 地上的装备可以框选标记、搬运维修；穿戴中 / 手持中的装备只能由本人右键修补台脱下再修。
+· 一次一件；工时按缺失耐久连续计算。
 · 任意 mod 的装备都能修，因为修补剂是通用材料。
 
 Repair Bench - repair worn weapons, apparel and armor to full hit points.
 Use the "Repair" order on dropped gear, or its command bar / right-click options,
 haul it to a repair bench and spend generic repair kits.
+Worn or held gear can also be repaired without taking it off first: select the colonist,
+right-click a repair bench, and they will take it off, repair it and put it back on.
 Quality, material and traits are preserved.
 Chinese and English UI included.
 by Redbean</description>
   <supportedVersions>
     <li>1.7</li>
   </supportedVersions>
-  <modVersion>1.0.0</modVersion>
+  <modVersion>1.0.1</modVersion>
 </ModMetaData>

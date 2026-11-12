@@ -7,4 +7,14 @@
     <casualInterruptible>true</casualInterruptible>
   </JobDef>
 
+  <!-- 小人把「自己身上」的装备脱下来、在修补台上修、再穿回去（右键修补台发起）。
+       targetA = 该件装备（初始穿在身上 / 拿在手上），targetB = 修补台，job.count = 修补剂数量。
+       没有 WorkGiver：这个流程只能由玩家右键下令，不参与自动巡查。 -->
+  <JobDef>
+    <defName>RepairBench_RepairWornItem</defName>
+    <driverClass>RepairBench.JobDriver_RepairWornItem</driverClass>
+    <reportString>repairing own TargetA.</reportString>
+    <casualInterruptible>true</casualInterruptible>
+  </JobDef>
+
 </Defs>

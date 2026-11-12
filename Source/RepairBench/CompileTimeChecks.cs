@@ -16,6 +16,7 @@ namespace RepairBench
         {
             Use(new WorkGiver_RepairDesignated());
             Use(new JobDriver_RepairItem());
+            Use(new JobDriver_RepairWornItem());
             Use(new Designator_RepairItem());
             Use(new RepairBenchExtension());
             Use(new RepairBenchProgress(null));

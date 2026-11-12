@@ -922,6 +922,72 @@ try {
     if ($rBad.Count -gt 0) { Fail "C-Recipe" (" | " + ($rBad -join " | ")) } else { Pass "C-Recipe" }
 } catch { Fail "C-Recipe" $_.Exception.Message }
 
+# ---------------------------------------------------------------- C-Ticks: work time is continuous in missing hit points
+try {
+    $tBad = New-Object System.Collections.Generic.List[string]
+    $ticksUtilPath = Join-Path $modRoot "Source\RepairBench\RepairBenchUtility.cs"
+    if (-not (Test-Path -LiteralPath $ticksUtilPath)) { $tBad.Add("RepairBenchUtility.cs missing") }
+    else {
+        $ttext = [System.IO.File]::ReadAllText($ticksUtilPath)
+        if ($ttext -notmatch "float missing\s*=\s*Mathf\.Clamp01\(1f - \(float\)item\.HitPoints / item\.MaxHitPoints\)") {
+            $tBad.Add("TicksFor does not compute a continuous missing-durability ratio")
+        }
+        if ($ttext -match "float ratio = \(float\)kits / Mathf\.Max\(1, ext\.kitsForFullRepair\)") {
+            $tBad.Add("TicksFor still snaps work time to repair-kit steps")
+        }
+        if ($ttext -notmatch "Mathf\.Max\(60, Mathf\.RoundToInt\(ticks\)\)") {
+            $tBad.Add("TicksFor lost its 60-tick floor")
+        }
+    }
+    if ($tBad.Count -gt 0) { Fail "C-Ticks" (" | " + ($tBad -join " | ")) } else { Pass "C-Ticks" }
+} catch { Fail "C-Ticks" $_.Exception.Message }
+
+# ---------------------------------------------------------------- C-WornJob: selected pawn repairs its own worn gear on the bench
+try {
+    $wBad = New-Object System.Collections.Generic.List[string]
+    $wornJobNode = Get-DefNode "Defs\JobDefs\RepairBench_Jobs.xml" "RepairBench_RepairWornItem"
+    if ($null -eq $wornJobNode) { $wBad.Add("RepairBench_RepairWornItem job def not found") }
+    else {
+        $wornDriverClass = Select-Text $wornJobNode "driverClass"
+        if ($wornDriverClass -ne "RepairBench.JobDriver_RepairWornItem") { $wBad.Add("worn job driverClass is '$wornDriverClass'") }
+        if ((Select-Text $wornJobNode "casualInterruptible") -ne "true") { $wBad.Add("worn job must be casualInterruptible") }
+    }
+    $wornDriverPath = Join-Path $modRoot "Source\RepairBench\JobDriver_RepairWornItem.cs"
+    if (-not (Test-Path -LiteralPath $wornDriverPath)) { $wBad.Add("JobDriver_RepairWornItem.cs missing") }
+    else {
+        $wdtext = [System.IO.File]::ReadAllText($wornDriverPath)
+        foreach ($needle in @("pawn.apparel.TryDrop", "pawn.equipment.TryDropEquipment", "pawn.equipment.MakeRoomFor", "pawn.equipment.AddEquipment", "RestoreGearAfterJob", "PutGearBackOn", "WithProgressBar", "RepairBench_RepairEffect", "RepairBench_RepairDone", "RepairBenchYayoCompat.UseOwnAnimation", "ownsWorkAnimation", "MessageRepairBenchReequipped")) {
+            if ($wdtext -notmatch [regex]::Escape($needle)) { $wBad.Add("driver lacks " + $needle) }
+        }
+    }
+    $wornProviderPath = Join-Path $modRoot "Source\RepairBench\FloatMenuOptionProvider_RepairBench.cs"
+    if (-not (Test-Path -LiteralPath $wornProviderPath)) { $wBad.Add("FloatMenuOptionProvider_RepairBench.cs missing") }
+    else {
+        $wptext = [System.IO.File]::ReadAllText($wornProviderPath)
+        foreach ($needle in @("OwnGearOptionsForBench", "GetDamagedWornGear", "TryMakeWornRepairJob", "clickedThing is Pawn", "FloatMenuRepairOwnItem")) {
+            if ($wptext -notmatch [regex]::Escape($needle)) { $wBad.Add("provider lacks " + $needle) }
+        }
+    }
+    $wornUtilPath = Join-Path $modRoot "Source\RepairBench\RepairBenchUtility.cs"
+    if (Test-Path -LiteralPath $wornUtilPath) {
+        $wutext = [System.IO.File]::ReadAllText($wornUtilPath)
+        foreach ($needle in @("GetDamagedWornGear", "TryMakeWornRepairJob", "IsWornOrEquippedBy", "pawn.apparel.IsLocked")) {
+            if ($wutext -notmatch [regex]::Escape($needle)) { $wBad.Add("utility lacks " + $needle) }
+        }
+    }
+    $wornDefOfPath = Join-Path $modRoot "Source\RepairBench\RepairBenchDefOf.cs"
+    if (Test-Path -LiteralPath $wornDefOfPath) {
+        if ([System.IO.File]::ReadAllText($wornDefOfPath) -notmatch "RepairBench_RepairWornItem") { $wBad.Add("RepairBenchDefOf lacks RepairBench_RepairWornItem") }
+    }
+    $wornProgressPath = Join-Path $modRoot "Source\RepairBench\RepairBenchProgress.cs"
+    if (Test-Path -LiteralPath $wornProgressPath) {
+        if ([System.IO.File]::ReadAllText($wornProgressPath) -match "DesignationOn\(e\.thing") {
+            $wBad.Add("repair progress still prunes entries that have no ground designation (worn-gear progress would be lost)")
+        }
+    }
+    if ($wBad.Count -gt 0) { Fail "C-WornJob" (" | " + ($wBad -join " | ")) } else { Pass "C-WornJob" }
+} catch { Fail "C-WornJob" $_.Exception.Message }
+
 # ---------------------------------------------------------------- summary
 Write-Host ""
 if ($script:failures -gt 0) {

@@ -21,6 +21,12 @@
   <FloatMenuForceRepairDesc>命令这名小人立刻去修。需要 {0} 个修补剂，以及一座装够修补剂的修补台。</FloatMenuForceRepairDesc>
   <FloatMenuForceRepairCannot>现在无法强制维修：物品被占用、没有可用的修补台，或这名小人的「修补」工作没有启用。</FloatMenuForceRepairCannot>
 
+  <FloatMenuRepairOwnItem>维修自己的装备：{0}</FloatMenuRepairOwnItem>
+  <FloatMenuRepairOwnItemDesc>选中的小人会把这件装备脱下来、在这座修补台上修好后再穿回。耐久 {0}/{1}（{2}%），消耗 {3} 个修补剂，约 {4} 秒。</FloatMenuRepairOwnItemDesc>
+  <FloatMenuRepairOwnNotWorn>这件装备不在该小人身上。</FloatMenuRepairOwnNotWorn>
+  <FloatMenuRepairOwnCannot>现在无法维修这件装备：装备被锁定、被占用，或修补台不可用。</FloatMenuRepairOwnCannot>
+  <MessageRepairBenchReequipped>修理被打断，小人已把装备重新穿好。</MessageRepairBenchReequipped>
+
   <GizmoRepairItem>维修</GizmoRepairItem>
   <GizmoRepairItemDesc>给这件装备打上修补标记。小人会把它搬到修补台，消耗修补剂把耐久修满。</GizmoRepairItemDesc>
   <GizmoCancelRepairItem>取消维修</GizmoCancelRepairItem>

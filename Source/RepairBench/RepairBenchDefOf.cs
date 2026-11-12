@@ -15,6 +15,9 @@ namespace RepairBench
         public static WorkGiverDef RepairBench_RepairDesignated;
         public static JobDef RepairBench_RepairItem;
 
+        // 小人修自己身上装备（脱下→台面修→穿回）的作业，Defs/JobDefs/RepairBench_Jobs.xml
+        public static JobDef RepairBench_RepairWornItem;
+
         // 自定义修补特效与收尾音（Defs/Effects/RepairBench_Effecters.xml、Defs/SoundDefs/RepairBench_Sounds.xml）
         public static EffecterDef RepairBench_RepairEffect;
         public static SoundDef RepairBench_RepairDone;

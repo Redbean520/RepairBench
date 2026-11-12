@@ -1,6 +1,6 @@
 # 工坊描述文案（Repair Bench）
 
-> 当前发布：**1.0.0**（已打包：`release\RepairBench\RepairBench-1.0.0\` 与 `RepairBench-1.0.0.zip`；**已首次上传创意工坊，PublishedFileId = 3837851806**，2026-11-11）｜目标：RimWorld 1.7 ｜依赖：无
+> 当前发布：**1.0.1**（已打包：`release\RepairBench\RepairBench-1.0.1\` 与 `RepairBench-1.0.1.zip`；创意工坊条目 PublishedFileId = 3837851806，2026-11-11 首发、2026-11-12 更新 1.0.1）｜目标：RimWorld 1.7 ｜依赖：无
 > 更新日期：2026-11-11（文案改版：只写玩家能感知的内容，不写实现细节）
 >
 > 受众是**玩家**，不是开发者：只写他们能看到的玩法、花费和问题；不写引擎/动画/音效/程序集/XML 结构这类内部实现，也不解释 mod 之间"谁让位给谁"的机制。
@@ -49,6 +49,7 @@ Repair Bench —— 让磨损的装备能修回 100% | 1.7
   - 选中装备 → 命令栏的「维修」
   - 右键装备 →「维修」或「强制维修」
 - 小人把装备摆到台面上修满，修完留在台旁
+- 穿在身上/拿在手里的也不用先脱：选中小人 → 右键修补台 → 挑一件，他自己脱下来修好再穿回去
 
 [h2]内容[/h2]
 [b]◆ 修补台[/b]
@@ -62,6 +63,11 @@ Repair Bench —— 让磨损的装备能修回 100% | 1.7
 - 命令标记：单件或框选，同原版标记手感
 - 物品命令栏：选中磨损装备就有按钮，不用先点标记
 - 右键：普通「维修」只打标记；「强制维修」立刻把选中的小人派过去；右键修补台可以逐件派活
+
+[b]◆ 穿着也能修[/b]
+- 选中小人右键修补台，列出他身上耐久不满的武器/衣物/护甲
+- 小人自己走到台边、脱下、摆台面修好、自动穿回；只能本人修自己的，一次一件
+- 修到一半被打断会自动穿回，回来接着修
 
 [b]◆ 中断与进度[/b]
 - 被打断、换班、读档都不会白干，回来接着修
@@ -79,8 +85,8 @@ Repair Bench —— 让磨损的装备能修回 100% | 1.7
 - 旧存档可以直接加
 
 [h2]常见问题[/h2]
-[b]Q：为什么修不了穿在身上/拿在手里的装备？[/b]
-A：只修地上的装备。先用原版的方式把它丢到地上，再标记。
+[b]Q：穿在身上/拿在手里的装备怎么修？[/b]
+A：选中小人 → 右键修补台 → 菜单里会列出他身上耐久不满的装备，他自己脱下来修好再穿回去。穿戴中的装备不能直接用「修补」标记框选，只能走这个入口。
 
 [b]Q：能修建筑吗？[/b]
 A：不能，建筑交给原版「修理」。
@@ -118,6 +124,7 @@ Vanilla only repairs buildings, so worn gear has to be replaced. This mod adds a
   - Select a damaged item and use the "Repair" button in its command bar
   - Right-click the item for "Repair" or "Force repair"
 - A colonist places the item on the bench top and repairs it to full; the item is left next to the bench
+- Worn or held gear needs no manual step: select the colonist, right-click the bench, pick an item — he takes it off, repairs it and puts it back on
 
 [h2]What you get[/h2]
 [b]◆ The bench[/b]
@@ -131,6 +138,11 @@ Vanilla only repairs buildings, so worn gear has to be replaced. This mod adds a
 - Order marking: single item or a dragged box, same feel as vanilla orders
 - Item command bar: a button right on the damaged item
 - Right-click: "Repair" just marks it; "Force repair" sends the selected colonist immediately; right-clicking the bench lets you dispatch pending items one by one
+
+[b]◆ Worn gear[/b]
+- Select a colonist and right-click the bench to list damaged weapons/apparel/armor he is wearing
+- He walks over, takes it off, repairs it on the bench and puts it back on; one item at a time, only his own gear
+- If interrupted mid-repair the item is put back on automatically and the work resumes later
 
 [b]◆ Interruptions[/b]
 - Getting interrupted, changing shifts or reloading a save doesn't waste the work; it resumes where it stopped
@@ -148,8 +160,8 @@ Vanilla only repairs buildings, so worn gear has to be replaced. This mod adds a
 - Existing saves are fine
 
 [h2]FAQ[/h2]
-[b]Q: Why can't I repair gear that is worn or equipped?[/b]
-A: Only gear on the ground can be repaired. Drop it first, then mark it.
+[b]Q: How do I repair gear that is worn or equipped?[/b]
+A: Select the colonist, right-click the repair bench and pick the item from the list — he takes it off, repairs it and puts it back on. Worn gear cannot be marked with the "repair" order; use this entry instead.
 
 [b]Q: Can it repair buildings?[/b]
 A: No, buildings use the vanilla repair work.
@@ -182,6 +194,7 @@ Bugs, balance notes and feature requests are welcome below.
 
 - 2026-11-11：首次上传创意工坊，PublishedFileId `3837851806`（从此以后游戏内更新走「更新已有条目」）。
 - v1.0.0（2026-11-11）：首个发布版——修补台（3×1、按材料染色、可涂漆、20 个修补剂容量）、通用修补剂（10 钢铁 + 5 任意织物/皮革 → 5）、修补技术研究（600、前置 Smithing）、Orders 修补标记（可拖框）、物品命令栏维修按钮、右键维修 / 强制维修（装备与台两种入口）、按缺失耐久扣料与计时（满耐久 3000 ticks、10 个修补剂）、断点续修 + 读档保留进度（MapComponent 存档）、四层缺料提示（High 警报 / 台面脉动图标 / 燃料 gizmo / 检视红字）、自制金属屑粒子与锉磨/扣合音、自制工作动画（检测到 Yayo's Animation 时让位给它）、中英双语。
+- v1.0.1（2026-11-12）：**不脱装备维修**——选中小人右键修补台，菜单列出该小人身上耐久不满的武器/衣物/护甲，小人自己走到台边脱下、摆台面修好、自动穿回；中断自动穿回并提示，断点可续修；工时改为按缺失耐久连续计算（不再按修补剂档位跳变）；锁定衣物不进菜单；新增 JobDriver_RepairWornItem 与 verify 契约 C-WornJob / C-Ticks。
 
 ## 维护提示
 

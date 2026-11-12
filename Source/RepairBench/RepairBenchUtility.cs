@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -80,19 +81,23 @@ namespace RepairBench
             return Mathf.Max(1, Mathf.CeilToInt(fraction * ext.kitsForFullRepair));
         }
 
+        /// <summary>
+        /// Work time is continuous in missing hit points: half-damaged gear takes half the time of
+        /// wrecked gear. Repair kits still come in integer steps (see KitsFor), but the work no
+        /// longer snaps to kit steps, so a scratch is a short job and a wreck is a long one.
+        /// </summary>
         public static int TicksFor(Thing item, RepairBenchExtension ext, float speed)
         {
             if (ext == null)
             {
                 ext = Extension;
             }
-            if (item == null || ext == null)
+            if (item == null || ext == null || item.MaxHitPoints <= 0)
             {
                 return 60;
             }
-            int kits = KitsFor(item, ext);
-            float ratio = (float)kits / Mathf.Max(1, ext.kitsForFullRepair);
-            float ticks = ext.ticksForFullRepair * ratio / Mathf.Max(0.1f, speed);
+            float missing = Mathf.Clamp01(1f - (float)item.HitPoints / item.MaxHitPoints);
+            float ticks = ext.ticksForFullRepair * missing / Mathf.Max(0.1f, speed);
             return Mathf.Max(60, Mathf.RoundToInt(ticks));
         }
 
@@ -186,6 +191,117 @@ namespace RepairBench
                 return null;
             }
             Job job = JobMaker.MakeJob(RepairBenchDefOf.RepairBench_RepairItem, item, bench);
+            job.count = kits;
+            return job;
+        }
+
+        /// <summary>True when this pawn is currently wearing / holding the given gear.</summary>
+        public static bool IsWornOrEquippedBy(Pawn pawn, Thing gear)
+        {
+            if (pawn == null || gear == null)
+            {
+                return false;
+            }
+            if (gear is Apparel apparel)
+            {
+                return pawn.apparel != null && pawn.apparel.WornApparel.Contains(apparel);
+            }
+            if (gear is ThingWithComps equipment)
+            {
+                return pawn.equipment != null && pawn.equipment.Contains(equipment);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Damaged weapons / apparel the pawn itself is wearing or holding and is allowed to take off.
+        /// Locked apparel (quest locked, styling station) is skipped, same as vanilla does.
+        /// </summary>
+        public static List<Thing> GetDamagedWornGear(Pawn pawn)
+        {
+            List<Thing> result = new List<Thing>();
+            if (pawn == null)
+            {
+                return result;
+            }
+            if (pawn.apparel != null)
+            {
+                foreach (Apparel apparel in pawn.apparel.WornApparel)
+                {
+                    if (IsGear(apparel) && apparel.HitPoints < apparel.MaxHitPoints &&
+                        !pawn.apparel.IsLocked(apparel))
+                    {
+                        result.Add(apparel);
+                    }
+                }
+            }
+            if (pawn.equipment != null)
+            {
+                foreach (ThingWithComps equipment in pawn.equipment.AllEquipmentListForReading)
+                {
+                    if (IsGear(equipment) && equipment.HitPoints < equipment.MaxHitPoints)
+                    {
+                        result.Add(equipment);
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Builds the "pawn takes its own gear off, repairs it on this bench, puts it back on" job,
+        /// or returns null and reports why (shown as the disabled float-menu reason).
+        /// </summary>
+        public static Job TryMakeWornRepairJob(Pawn pawn, Thing gear, Thing bench, out string failReason)
+        {
+            failReason = null;
+            if (pawn == null || pawn.Map == null || gear == null || gear.Destroyed)
+            {
+                return null;
+            }
+            if (!IsWornOrEquippedBy(pawn, gear))
+            {
+                failReason = "FloatMenuRepairOwnNotWorn".Translate();
+                return null;
+            }
+            if (!IsGear(gear) || gear.HitPoints >= gear.MaxHitPoints)
+            {
+                failReason = "FloatMenuRepairOwnCannot".Translate();
+                return null;
+            }
+            if (gear is Apparel lockedApparel && pawn.apparel != null && pawn.apparel.IsLocked(lockedApparel))
+            {
+                failReason = "FloatMenuRepairOwnCannot".Translate();
+                return null;
+            }
+            if (bench == null || !bench.Spawned || bench.def != RepairBenchDefOf.RepairBench_Bench)
+            {
+                failReason = "RepairBench_NoUsableBench".Translate();
+                return null;
+            }
+            RepairBenchExtension ext = Extension;
+            if (ext == null)
+            {
+                return null;
+            }
+            int kits = KitsFor(gear, ext);
+            if (!CanUseBench(bench, kits) || bench.IsForbidden(pawn) ||
+                !pawn.CanReach(bench, PathEndMode.InteractionCell, Danger.Deadly))
+            {
+                failReason = "RepairBench_NoUsableBench".Translate();
+                return null;
+            }
+            if (!pawn.CanReserve(gear, 1, -1, null, true))
+            {
+                failReason = "FloatMenuRepairOwnCannot".Translate();
+                return null;
+            }
+            if (!pawn.CanReserve(bench, 1, -1, null, true))
+            {
+                failReason = "RepairBench_NoUsableBench".Translate();
+                return null;
+            }
+            Job job = JobMaker.MakeJob(RepairBenchDefOf.RepairBench_RepairWornItem, gear, bench);
             job.count = kits;
             return job;
         }
